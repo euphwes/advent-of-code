@@ -4,7 +4,7 @@ from time import time
 
 #------------------------------------------------------------------------------
 
-AOC_OUTPUT_HEADER = '\nAoC {year} – Day {day}, part {part}'
+AOC_OUTPUT_HEADER = '\nAdvent of Code {year} – Day {day}, part {part}'
 
 MICROS_ELAPSED  = 'Ran in {} μs'
 MILLIS_ELAPSED  = 'Ran in {} ms'
