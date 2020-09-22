@@ -7,9 +7,7 @@ def get_input(input_file):
     """ Returns the input from the specified file path, as a list of raw lines from the input file
     with newlines removed. """
 
-    input_lines = [x.replace('\n', '') for x in open(input_file).readlines()]
-
-    return input_lines
+    return [x.replace('\n', '') for x in open(input_file).readlines()]
 
 
 def get_tokenized_input(input_file, split_str, transform=DO_NOTHING):
