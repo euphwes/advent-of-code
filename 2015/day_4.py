@@ -1,5 +1,6 @@
 from util.decorators import aoc_output_formatter
 from util.input import get_input
+from util.iter import int_stream
 
 from hashlib import md5
 
@@ -9,11 +10,11 @@ def __brute_force(key, target):
     """ Brute-force the lowest value of `n` for which the md5 hash of `secret_key{n}` starts with
     the specified target value. """
 
-    n = 1
-    while True:
-        if md5((key + str(n)).encode()).hexdigest().startswith(target):
+    md5_startswith_target = lambda k: md5(k).hexdigest().startswith(target)
+
+    for n in int_stream():
+        if md5_startswith_target((key + str(n)).encode()):
             return n
-        n += 1
 
 #---------------------------------------------------------------------------------------------------
 
