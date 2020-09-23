@@ -1,7 +1,7 @@
 
 class InputNotAvailableException(BaseException):
-    """ An exception to indicate that an IntcodeComputer is attempting to read
-    input but none is available. """
+    """ An exception to indicate that an IntcodeComputer is attempting to read input but none is
+    available. """
     pass
 
 
@@ -49,12 +49,11 @@ class IntcodeComputer:
 
 
     def __init__(self):
-        """ Initializes an Intcode computer. Sets the instruction pointer to
-        address 0, and establishes some maps defining which action to take for
-        any given opcode. """
+        """ Initializes an Intcode computer. Sets the instruction pointer to address 0, and
+        establishes some maps defining which action to take for any given opcode. """
 
         self.output_buffer = list()
-        
+
         self.relative_base   = 0
         self.instruction_ptr = 0
 
@@ -76,15 +75,14 @@ class IntcodeComputer:
     def execute(self, program, program_input=None):
         """ Executes the provided program with the specified input. """
 
-        # If the computer is currently waiting, that means it was previously
-        # running. We only want to update the input to utilize the new input,
-        # we don't want to mess with the program state (memory), we want to
-        # continue running with the previous state of the memory
+        # If the computer is currently waiting, that means it was previously running. We only want
+        # to update the input to utilize the new input, we don't want to mess with the program state
+        # (memory), we want to continue running with the previous state of the memory
         if self.state == IntcodeComputer.STATE_WAITING:
             self.program_input = program_input
 
-        # If the computer isn't waiting, this is a fresh execution.
-        # Store the program into memory, and the new input
+        # If the computer isn't waiting, this is a fresh execution. Store the program into memory,
+        # and the new input
         else:
             self.program = program
             self.program_input = program_input
@@ -106,11 +104,11 @@ class IntcodeComputer:
                 self.state = IntcodeComputer.STATE_WAITING
                 raise
 
-            # If the instruction just executed modified the instruction pointer
-            # directly, skip advancing the instruction pointer
+            # If the instruction just executed modified the instruction pointer directly, skip
+            # advancing the instruction pointer
             if not skip_advance_instruction_ptr:
-                # Advance the instruction pointer by the number of parameters used
-                # by the previous instruction
+                # Advance the instruction pointer by the number of parameters used by the previous
+                # instruction
                 self.instruction_ptr += IntcodeComputer.OPCODE_NUM_PARAMS_MAP[opcode] + 1
 
             # Retrieve the next opcode and param modes

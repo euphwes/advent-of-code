@@ -2,7 +2,7 @@ from contextlib import ContextDecorator
 from datetime import timedelta
 from time import time
 
-#------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 
 AOC_OUTPUT_HEADER = '\nAdvent of Code {year} – Day {day}, part {part}'
 
@@ -10,29 +10,28 @@ MICROS_ELAPSED  = 'Ran in {} μs'
 MILLIS_ELAPSED  = 'Ran in {} ms'
 SECONDS_ELAPSED = 'Ran in {}.{} s'
 
-#------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 
 def aoc_output_formatter(year, day, part, label=None, ignore_return_val=False):
-    """ Builds a decorator to format the output for a specific AoC solution
-    function with niceties like the current day, which problem part it is, and
-    an optional meaningful label for the solution's output.
+    """ Builds a decorator to format the output for a specific AoC solution function with niceties
+    like the current day, which problem part it is, and an optional meaningful label for the
+    solution's output.
 
-    The user can optionally choose to ignore the decorated function's return
-    value, which is useful if the problem solution is output by some other
-    means (like being printed to console), not returned by the function. """
+    The user can optionally choose to ignore the decorated function's return value, which is useful
+    if the problem solution is output by some othermeans (like being printed to console), not
+    returned by the function. """
 
     header = AOC_OUTPUT_HEADER.format(year=year, day=day, part=part)
     output_format = '{label}: {value}' if label else '{value}'
 
     def __aoc_formatter_decorator(fn):
-        """ The actual decorator applied to the decorated function. Writes
-        a header and builds an output string based on the year, day, part,
-        and optional output label passed in above. """
+        """ The actual decorator applied to the decorated function. Writes a header and builds an
+        output string based on the year, day, part, and optional output label passed in above. """
 
         @__aocTimer()
         def __fn_wrapper(*args):
-            """ The decorated function, which is timed using the timer context
-            manager class defined below. """
+            """ The decorated function, which is timed using the timer context manager class
+            defined below. """
 
             print(header)
             value = fn(*args)
@@ -50,8 +49,8 @@ def aoc_output_formatter(year, day, part, label=None, ignore_return_val=False):
 
 
 class __aocTimer(ContextDecorator):
-    """ Records the runtime of the decorated function, and prints out a
-    user-friendly representation of the elapsed time. """
+    """ Records the runtime of the decorated function, and prints out a user-friendly representation
+    of the elapsed time. """
 
     def __enter__(self):
         self.start = time()

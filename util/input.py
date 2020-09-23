@@ -1,7 +1,7 @@
 # simple placeholder lambda which does nothing
 DO_NOTHING = lambda token: token
 
-#------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 
 def get_input(input_file):
     """ Returns the input from the specified file path, as a list of raw lines from the input file

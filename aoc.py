@@ -1,12 +1,12 @@
 import sys
 import importlib
 
-#------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 
 INPUT_PATH  = '{year}/inputs/input_day{day}.txt'
 MODULE_NAME = '{year}.day_{day}'
 
-#------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 
 def __invalid_usage():
     """ Displays a message to the user that they are invoking the script incorrectly."""
@@ -36,8 +36,7 @@ def __get_module_and_input_path():
     year, day = __get_year_and_day_from_input()
     return MODULE_NAME.format(year=year, day=day), INPUT_PATH.format(year=year, day=day)
 
-#------------------------------------------------------------------------------
-
+#---------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     module, input_file = __get_module_and_input_path()
     importlib.import_module(module).run(input_file)

@@ -1,6 +1,5 @@
 from util.decorators import aoc_output_formatter
 from util.input import get_input
-from util.iter import int_stream
 
 from hashlib import md5
 
