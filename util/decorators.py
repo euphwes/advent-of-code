@@ -41,6 +41,8 @@ def aoc_output_formatter(year, day, part, label=None, ignore_return_val=False):
             if not ignore_return_val:
                 print(output_format.format(value=value, label=label))
 
+            return value
+
         # return the decorated function from the decorator
         return __fn_wrapper
 

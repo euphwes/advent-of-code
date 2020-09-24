@@ -18,5 +18,4 @@ def int_stream(start=0, end=None):
         yield n
         if n == end:
             return
-
         n += 1
