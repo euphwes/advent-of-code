@@ -79,7 +79,6 @@ def __evaluate_all_signals(connections):
 
 #---------------------------------------------------------------------------------------------------
 
-
 @aoc_output_formatter(2015, 7, 1, 'signal on wire a')
 def part_one(connections):
     wires = __evaluate_all_signals(connections)
