@@ -1,7 +1,5 @@
 from util.decorators import aoc_output_formatter
-from util.input import get_tokenized_input
 
-from itertools import permutations
 from string import ascii_lowercase
 
 #---------------------------------------------------------------------------------------------------

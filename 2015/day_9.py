@@ -8,6 +8,7 @@ from itertools import permutations
 def __parse_city_distance(tokens):
     """ For a given list of tokens [City1, "to", City2, "=", distance], returns a tuple of the two
     cities and their distance: ((City1, City2), distance). """
+
     return ((tokens[0], tokens[2]), int(tokens[4]))
 
 
