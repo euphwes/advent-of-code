@@ -8,7 +8,7 @@ class Reindeer:
     time, and then must rest. """
 
     def __init__(self, input_tokens):
-        """ Tokens ex: Vixen can fly 19 km/s for 7 seconds, but then must rest for 124 seconds. """
+        # Tokens ex: `Vixen can fly 19 km/s for 7 seconds, but then must rest for 124 seconds.`
         self.name      = input_tokens[0]
         self.speed     = int(input_tokens[3])
         self.fly_time  = int(input_tokens[6])

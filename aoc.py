@@ -37,6 +37,7 @@ def __get_module_and_input_path():
     return MODULE_NAME.format(year=year, day=day), INPUT_PATH.format(year=year, day=day)
 
 #---------------------------------------------------------------------------------------------------
+
 if __name__ == '__main__':
     module, input_file = __get_module_and_input_path()
     importlib.import_module(module).run(input_file)
