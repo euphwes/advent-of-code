@@ -1,9 +1,8 @@
 from util.decorators import aoc_output_formatter
 from util.input import get_tokenized_input
 
-from json import loads
-
 from itertools import permutations
+from json import loads
 
 #---------------------------------------------------------------------------------------------------
 
