@@ -16,7 +16,6 @@ def __parse_mfcsam_output(output):
         thing, amount = line.split(': ')
         values[thing] = int(amount)
 
-    print(values)
     return values
 
 
