@@ -4,7 +4,6 @@ from util.input import get_input
 from string import hexdigits
 
 #---------------------------------------------------------------------------------------------------
-
 __REQUIRED_FIELDS = (
     'byr',
     'iyr',
