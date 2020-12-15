@@ -3,8 +3,8 @@ import importlib
 
 #---------------------------------------------------------------------------------------------------
 
-INPUT_PATH  = '{year}/inputs/input_day{day}.txt'
-MODULE_NAME = '{year}.day_{day}'
+__INPUT_PATH  = '{year}/inputs/input_day{day}.txt'
+__MODULE_NAME = '{year}.day_{day}'
 
 #---------------------------------------------------------------------------------------------------
 
@@ -31,10 +31,10 @@ def __get_year_and_day_from_input():
 
 
 def __get_module_and_input_path():
-    """ Returns the module for the specified year and day, as well as the filepath for the input. """
+    """ Returns the module for the specified year and day, and the path of the input file. """
 
     year, day = __get_year_and_day_from_input()
-    return MODULE_NAME.format(year=year, day=day), INPUT_PATH.format(year=year, day=day)
+    return __MODULE_NAME.format(year=year, day=day), __INPUT_PATH.format(year=year, day=day)
 
 #---------------------------------------------------------------------------------------------------
 
