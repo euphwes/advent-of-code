@@ -3,9 +3,7 @@ from util.input import get_input
 
 #---------------------------------------------------------------------------------------------------
 
-
 def _is_possible_triangle(side_lengths):
-    """ Returns if the 3 side lengths provided could potentially form a triangle. """
 
     s1, s2, s3 = side_lengths
     return (s1+s2 > s3) and (s2+s3 > s1) and (s1+s3 > s2)
