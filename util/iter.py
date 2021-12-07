@@ -19,3 +19,30 @@ def int_stream(start=0, end=None):
         if n == end:
             return
         n += 1
+
+
+def bidirectional_range(start, end, inclusive=False):
+    """ Implements a bidirectional range, optionally inclusive of the end point.
+
+    bidirectional_range(0, 3) = generator of (0, 1, 2)
+    bidirectional_range(0, 3, inclusive=True) = generator of (0, 1, 2, 3)
+    bidirectional_range(4, 1) = generator of (4, 3, 2)
+    bidirectional_range(4, 1, inclusive=True) = generator of (4, 3, 2, 1)
+    """
+
+    # This is just a "regular" ascending range. We can yield from the built-in `range`.
+    if start <= end:
+        if inclusive:
+            end += 1
+        yield from range(start, end)
+
+    # For the descending case, let's avoid using the built-in `range` and reversing it, because that
+    # requires building the whole range in memory first so we can reverse it. Let's do it stepwise
+    # and yield each value, so this is a proper generator.
+    else:
+        curr = start
+        if inclusive:
+            end -= 1
+        while curr > end:
+            yield curr
+            curr -= 1
