@@ -1,5 +1,6 @@
 """ Module providing utility functions related to iteration. """
 
+
 def nested_iterable(iter1, iter2):
     """ A generator for yielding pairs of values built from iterator over two iterables in a nested
     for-loop fashion. """
