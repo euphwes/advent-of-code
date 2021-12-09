@@ -1,28 +1,14 @@
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 from util.iter import nested_iterable
+from util.structures import get_neighbors_of
+
 
 #---------------------------------------------------------------------------------------------------
 
 FLOOR = '.'
 OPEN_SEAT = 'L'
 OCCUPIED_SEAT = '#'
-
-def __neighbors_of(seat_x, seat_y, seating_area):
-    """ Returns a generator which yields all of the seats neighboring the one in the provided
-    location. """
-
-    max_x = len(seating_area[0])
-    max_y = len(seating_area)
-
-    neighboring_x = [x for x in [seat_x-1, seat_x, seat_x+1] if x >= 0 and x < max_x]
-    neighboring_y = [y for y in [seat_y-1, seat_y, seat_y+1] if y >= 0 and y < max_y]
-
-    for x, y in nested_iterable(neighboring_x, neighboring_y):
-        # This isn't a neighbor, this is the seat itself. Skip it.
-        if (x, y) == (seat_x, seat_y):
-            continue
-        yield seating_area[y][x]
 
 
 def __visible_neighbors_of(seat_x, seat_y, seating_area):
@@ -90,12 +76,8 @@ __neighbors_impl = None
 def __count_nearby_occupied_seats(seat_x, seat_y, seating_area):
     """ Returns the number of nearby seats which are occupied. """
 
-    seats_occupied = 0
-    for neighbor in __neighbors_impl(seat_x, seat_y, seating_area):
-        if neighbor == OCCUPIED_SEAT:
-            seats_occupied += 1
-
-    return seats_occupied
+    neighbors = __neighbors_impl(seat_x, seat_y, seating_area)
+    return sum(1 for n in neighbors if n == OCCUPIED_SEAT)
 
 
 def __count_total_occupied_seats(seating_area):
@@ -177,7 +159,7 @@ def __evaluate_seating_area_until_stabilized(seating_area):
 def part_one(seating_area):
 
     global __neighbors_impl, __MAX_OCCUPIED_NEIGHBORS
-    __neighbors_impl = __neighbors_of
+    __neighbors_impl = get_neighbors_of
     __MAX_OCCUPIED_NEIGHBORS = 4
 
     seating_area = __evaluate_seating_area_until_stabilized(seating_area)

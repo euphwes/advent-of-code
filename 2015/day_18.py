@@ -1,26 +1,12 @@
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 from util.iter import nested_iterable
+from util.structures import get_neighbors_of
 
 #---------------------------------------------------------------------------------------------------
 
 LIGHT_ON = '#'
 LIGHT_OFF = '.'
-
-def __neighbors_of(pos_x, pos_y, lights):
-    """ Returns a generator which yields all of the lights neighboring the provided location. """
-
-    max_x = len(lights[0])
-    max_y = len(lights)
-
-    neighboring_x = [x for x in [pos_x-1, pos_x, pos_x+1] if x >= 0 and x < max_x]
-    neighboring_y = [y for y in [pos_y-1, pos_y, pos_y+1] if y >= 0 and y < max_y]
-
-    for x, y in nested_iterable(neighboring_x, neighboring_y):
-        # This isn't a neighbor, this is the light itself. Skip it.
-        if (x, y) == (pos_x, pos_y):
-            continue
-        yield lights[y][x]
 
 
 def __create_blank_light_grid(width, height):
@@ -32,7 +18,7 @@ def __create_blank_light_grid(width, height):
 def __count_nearby_on_lights(x, y, lights):
     """ Counts the number of lights neighboring the provided position which are on. """
 
-    return sum(1 for light in __neighbors_of(x, y, lights) if light == LIGHT_ON)
+    return sum(1 for light in get_neighbors_of(x, y, lights) if light == LIGHT_ON)
 
 
 def __count_total_lights_on(lights):
