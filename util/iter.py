@@ -11,7 +11,7 @@ def nested_iterable(iter1, iter2):
 
 
 def int_stream(start=0, end=None):
-    """ A generator yielding integers starting at `start` , continuing to (and including) `end`
+    """ A generator yielding integers starting at `start`, continuing to (and including) `end`
     if a value is provided. """
 
     n = start
