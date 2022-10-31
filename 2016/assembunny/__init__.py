@@ -31,8 +31,19 @@ def evaluate_assembunny(registers, instructions):
         # Remember if we've already modded the program counter with the jnz instruction
         already_modded_pc = False
 
+        # Evaluate a "toggle" instruction
+        if instruction.code == 'tgl':
+            try:
+                target_instruction = instructions[pc+registers[params[0]]]
+                if len(target_instruction.params) == 1:
+                    target_instruction.code = 'dec' if target_instruction.code == 'inc' else 'inc'
+                else:
+                    target_instruction.code = 'cpy' if target_instruction.code == 'jnz' else 'jnz'
+            except IndexError:
+                pass
+
         # Evaluate a "jump if not zero" instruction
-        if instruction.code == 'jnz':
+        elif instruction.code == 'jnz':
             # Determine the value to check if zero. It's either an integer, or a register reference
             val = params[0]
             if val in registers_list:
@@ -42,7 +53,13 @@ def evaluate_assembunny(registers, instructions):
 
             # If the value is not zero, modify the PC by the value of the second parameter.
             if val != 0:
-                pc += int(params[1])
+                val2 = params[1]
+                if val2 in registers_list:
+                    val2 = registers[val2]
+                else:
+                    val2 = int(val2)
+
+                pc += val2
                 already_modded_pc = True
 
         # Evaluate a "increment" instruction
