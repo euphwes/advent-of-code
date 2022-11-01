@@ -14,7 +14,7 @@ def get_neighbors_of(pos_x, pos_y, grid, include_diagonals=True, with_coords=Fal
     neighboring_y = [y for y in [pos_y-1, pos_y, pos_y+1] if y >= 0 and y < max_y]
 
     for x, y in nested_iterable(neighboring_x, neighboring_y):
-        # This isn't a neighbor, this is the light itself. Skip it.
+        # This isn't a neighbor, this is the cell itself. Skip it.
         if (x, y) == (pos_x, pos_y):
             continue
 
