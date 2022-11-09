@@ -11,8 +11,10 @@ def part_one(instructions):
     # Init a register bank a-d to 0 values
     registers = {x: 0 for x in 'abcd'}
 
-    evaluated_registers = evaluate_assembunny(registers, instructions)
-    return evaluated_registers['a']
+    for step in iter(evaluate_assembunny(registers, instructions)):
+        pass
+
+    return registers['a']
 
 
 @aoc_output_formatter(2016, 12, 2, 'value in register a if c starts at 1')
@@ -22,8 +24,10 @@ def part_two(instructions):
     registers = {x: 0 for x in 'abcd'}
     registers['c'] = 1
 
-    evaluated_registers = evaluate_assembunny(registers, instructions)
-    return evaluated_registers['a']
+    for step in iter(evaluate_assembunny(registers, instructions)):
+        pass
+
+    return registers['a']
 
 #---------------------------------------------------------------------------------------------------
 

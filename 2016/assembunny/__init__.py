@@ -104,7 +104,7 @@ def _optimize(instructions):
     return instructions
 
 
-def evaluate_assembunny(registers, instructions):
+def evaluate_assembunny(registers, instructions, output_buffer=None):
     """ Evaluates a set of assembunny instructions against a set of register values, and returns
     the register values when the instructions terminate. """
 
@@ -199,6 +199,16 @@ def evaluate_assembunny(registers, instructions):
         elif instruction.code == 'nop':
             pass
 
+        # Evaluate an "out" instruction
+        elif instruction.code == 'out':
+            val = params[0]
+            if val in registers_list:
+                val = registers[val]
+            else:
+                val = int(val)
+
+            output_buffer.append(val)
+
         else:
             raise ValueError(f'WTF is {instruction.code}')
 
@@ -206,5 +216,4 @@ def evaluate_assembunny(registers, instructions):
         if not already_modded_pc:
             pc += 1
 
-    # Done evaluating the instructions, return the register values.
-    return registers
+        yield
