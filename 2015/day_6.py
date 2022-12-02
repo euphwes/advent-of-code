@@ -76,7 +76,7 @@ class LightsCommand:
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 6, 1, 'number of lights on')
+@aoc_output_formatter(2015, 6, 1, 'number of lights on', assert_answer=400410)
 def part_one(lights, commands):
     for command in commands:
         lights = command.execute(lights)
@@ -84,7 +84,7 @@ def part_one(lights, commands):
     return sum(lights.values())
 
 
-@aoc_output_formatter(2015, 6, 2, 'total light brightness')
+@aoc_output_formatter(2015, 6, 2, 'total light brightness', assert_answer=15343601)
 def part_two(lights, commands):
     for command in commands:
         lights = command.execute(lights)

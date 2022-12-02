@@ -10,7 +10,7 @@ def _diagonal_coords_stream():
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 25, 1, 'code at target coordinates')
+@aoc_output_formatter(2015, 25, 1, 'code at target coordinates', assert_answer=2650453)
 def part_one(target_x, target_y):
     code = 20151125
     for x, y in _diagonal_coords_stream():

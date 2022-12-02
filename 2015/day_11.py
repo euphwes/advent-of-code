@@ -76,12 +76,12 @@ def __password_generator(password):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 11, 1, "Santa's next password")
+@aoc_output_formatter(2015, 11, 1, "Santa's next password", assert_answer='vzbxxyzz')
 def part_one(password_generator):
     return next(password_generator)
 
 
-@aoc_output_formatter(2015, 11, 2, "Santa's next password after that")
+@aoc_output_formatter(2015, 11, 2, "Santa's next password after that", assert_answer='vzcaabcc')
 def part_two(password_generator):
     return next(password_generator)
 

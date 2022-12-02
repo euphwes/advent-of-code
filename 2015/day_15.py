@@ -59,7 +59,7 @@ def __ingredient_breakdown_options(target_tbps, num_ingredients):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 15, 1, "Best cookie score")
+@aoc_output_formatter(2015, 15, 1, "Best cookie score", assert_answer=21367368)
 def part_one(ingredients):
     cookies_score = list()
     for recipe in __ingredient_breakdown_options(100, len(ingredients)):
@@ -67,7 +67,7 @@ def part_one(ingredients):
     return max(cookies_score)
 
 
-@aoc_output_formatter(2015, 15, 2, "Best 500 calorie cookie score")
+@aoc_output_formatter(2015, 15, 2, "Best 500 calorie cookie score", assert_answer=1766400)
 def part_two(ingredients):
     cookies_score = list()
     for recipe in __ingredient_breakdown_options(100, len(ingredients)):

@@ -28,12 +28,12 @@ def __brute_force_route_lengths(cities, distance_map):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 9, 1, 'distance of shortest route')
+@aoc_output_formatter(2015, 9, 1, 'distance of shortest route', assert_answer=251)
 def part_one(cities, city_distance_map):
     return min(route_len for _, route_len in __brute_force_route_lengths(cities, city_distance_map))
 
 
-@aoc_output_formatter(2015, 9, 2, 'distance of longest route')
+@aoc_output_formatter(2015, 9, 2, 'distance of longest route', assert_answer=898)
 def part_two(cities, city_distance_map):
     return max(route_len for _, route_len in __brute_force_route_lengths(cities, city_distance_map))
 

@@ -20,12 +20,12 @@ def ribbon_footage(length, width, height):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 2, 1, 'square feet of wrapping paper')
+@aoc_output_formatter(2015, 2, 1, 'square feet of wrapping paper', assert_answer=1588178)
 def part_one(boxes):
     return sum(wrapping_paper_area(l, w, h) for l, w, h in boxes)
 
 
-@aoc_output_formatter(2015, 2, 2, 'feet of ribbon')
+@aoc_output_formatter(2015, 2, 2, 'feet of ribbon', assert_answer=3783758)
 def part_two(boxes):
     return sum(ribbon_footage(l, w, h) for l, w, h in boxes)
 

@@ -13,7 +13,7 @@ __direction_mods = {
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 3, 1, 'houses with presents')
+@aoc_output_formatter(2015, 3, 1, 'houses with presents', assert_answer=2592)
 def part_one(directions):
     houses = set()
     houses.add((0, 0))
@@ -28,7 +28,7 @@ def part_one(directions):
     return len(houses)
 
 
-@aoc_output_formatter(2015, 3, 2, 'houses with presents')
+@aoc_output_formatter(2015, 3, 2, 'houses with presents', assert_answer=2360)
 def part_two(directions):
     houses = set()
     houses.add((0, 0))

@@ -28,12 +28,12 @@ def __evaluate_document_sum(document, ignore_red=False):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 12, 1, "Accounting document sum")
+@aoc_output_formatter(2015, 12, 1, "Accounting doc sum", assert_answer=119433)
 def part_one(document):
     return __evaluate_document_sum(document)
 
 
-@aoc_output_formatter(2015, 12, 2, "Accounting document sum, ignoring red objects")
+@aoc_output_formatter(2015, 12, 2, "Accounting doc sum, ignoring red objects", assert_answer=68466)
 def part_two(document):
     return __evaluate_document_sum(document, ignore_red=True)
 

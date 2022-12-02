@@ -18,12 +18,12 @@ def __brute_force(key, target):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 4, 1, 'answer')
+@aoc_output_formatter(2015, 4, 1, 'answer', assert_answer=346386)
 def part_one(key):
     return __brute_force(key, '00000')
 
 
-@aoc_output_formatter(2015, 4, 2, 'answer')
+@aoc_output_formatter(2015, 4, 2, 'answer', assert_answer=9958218)
 def part_two(key):
     return __brute_force(key, '000000')
 

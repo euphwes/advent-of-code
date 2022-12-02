@@ -68,7 +68,7 @@ def __animate_lights(lights, handle_stuck_lights = False):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 18, 1, "number of lights on")
+@aoc_output_formatter(2015, 18, 1, "number of lights on", assert_answer=821)
 def part_one(lights):
 
     for _ in range(100):
@@ -77,7 +77,7 @@ def part_one(lights):
     return __count_total_lights_on(lights)
 
 
-@aoc_output_formatter(2015, 18, 2, 'number of lights on')
+@aoc_output_formatter(2015, 18, 2, 'number of lights on', assert_answer=886)
 def part_two(lights):
 
     # Ensure the 4 corner lights start on

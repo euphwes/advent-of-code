@@ -37,14 +37,14 @@ def __get_presents_for_house_with_lazy_elves(n):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 20, 1, 'first house to get the target present count')
+@aoc_output_formatter(2015, 20, 1, 'first house to get the target present count', assert_answer=786240)
 def part_one(target_present_count):
     for n in int_stream():
         if __get_presents_for_house(n) >= target_present_count:
             return n
 
 
-@aoc_output_formatter(2015, 20, 2, 'first house to get the target present count with lazy elves')
+@aoc_output_formatter(2015, 20, 2, 'first house to get the target present count with lazy elves', assert_answer=831600)
 def part_two(target_present_count):
     for n in int_stream():
         if __get_presents_for_house_with_lazy_elves(n) >= target_present_count:

@@ -32,7 +32,7 @@ def all_indices_of(string, target):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 19, 1, 'number of distinct molecules after 1 replacement')
+@aoc_output_formatter(2015, 19, 1, 'number of distinct molecules after 1 replacement', assert_answer=576)
 def part_one(reactions, medicine_molecule):
     new_molecules = set()
     for start, finish in reactions:
@@ -43,7 +43,7 @@ def part_one(reactions, medicine_molecule):
     return len(new_molecules)
 
 
-@aoc_output_formatter(2015, 19, 2, 'minimum number of replacements to create medicine')
+@aoc_output_formatter(2015, 19, 2, 'minimum number of replacements to create medicine', assert_answer=207)
 def part_two(reactions, medicine_molecule):
 
     # Figure out the reverse problem; how many steps to go from the medicine molecule to the

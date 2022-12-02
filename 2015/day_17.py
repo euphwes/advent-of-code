@@ -5,7 +5,7 @@ from itertools import combinations
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 17, 1, "ways to fill containers to make 150 liters eggnog")
+@aoc_output_formatter(2015, 17, 1, "ways to make 150 liters eggnog", assert_answer=1304)
 def part_one(containers):
 
     count = 0
@@ -15,7 +15,7 @@ def part_one(containers):
     return count
 
 
-@aoc_output_formatter(2015, 17, 2, "ways to fill minimal containers to make 150 liters eggnog")
+@aoc_output_formatter(2015, 17, 2, "ways to make 150 liters eggnog in minimum containers", assert_answer=18)
 def part_two(containers):
 
     for n in range(1, len(containers)+1):

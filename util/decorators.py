@@ -43,7 +43,9 @@ def aoc_output_formatter(year, day, part, label=None, ignore_return_val=False, a
 
             if assert_answer is not None:
                 if assert_answer != value:
-                    print(f'** {value} does not match the expected answer {assert_answer} **')
+                    err = f'\n{header}'
+                    err += f'\n** {value} does not match the expected answer {assert_answer} **'
+                    raise Exception(err)
             return value
 
         # Return the decorated function from the decorator

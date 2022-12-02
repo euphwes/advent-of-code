@@ -83,12 +83,12 @@ def __check_aunt_sues(sue_list, attributes, comparator_map):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 16, 1, "Aunt Sue #")
+@aoc_output_formatter(2015, 16, 1, "Aunt Sue #", assert_answer=40)
 def part_one(sue_list, attributes):
     return __check_aunt_sues(sue_list, attributes, dict())
 
 
-@aoc_output_formatter(2015, 16, 2, "Correct Aunt Sue #")
+@aoc_output_formatter(2015, 16, 2, "Correct Aunt Sue #", assert_answer=241)
 def part_two(sue_list, attributes):
     return __check_aunt_sues(sue_list, attributes, __mfcsam_comparators)
 

@@ -86,12 +86,12 @@ def __is_nice_v2(target):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 5, 1, 'nice strings (v1)')
+@aoc_output_formatter(2015, 5, 1, 'nice strings (v1)', assert_answer=258)
 def part_one(strings):
     return sum(1 if __is_nice_v1(s) else 0 for s in strings)
 
 
-@aoc_output_formatter(2015, 5, 2, 'nice strings (v2)')
+@aoc_output_formatter(2015, 5, 2, 'nice strings (v2)', assert_answer=53)
 def part_two(strings):
     return sum(1 if __is_nice_v2(s) else 0 for s in strings)
 

@@ -126,7 +126,7 @@ class AssemblyInterpreter:
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 23, 1, 'value of register b')
+@aoc_output_formatter(2015, 23, 1, 'value of register b', assert_answer=255)
 def part_one(program):
     computer = AssemblyInterpreter()
     computer.execute_program(program)
@@ -134,7 +134,7 @@ def part_one(program):
     return computer.register_b
 
 
-@aoc_output_formatter(2015, 23, 2, 'value of register b if register a starts with 1')
+@aoc_output_formatter(2015, 23, 2, 'value of register b if register a starts with 1', assert_answer=334)
 def part_two(program):
     computer = AssemblyInterpreter()
     computer.register_a = 1

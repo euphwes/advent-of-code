@@ -28,12 +28,12 @@ def __evaluate_seating_chart(seating_chart, happiness_map):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 13, 1, "Max happiness")
+@aoc_output_formatter(2015, 13, 1, "Max happiness", assert_answer=733)
 def part_one(people, happiness_map):
     return max(__evaluate_seating_chart(chart, happiness_map) for chart in permutations(people))
 
 
-@aoc_output_formatter(2015, 13, 2, "Max happiness with me included")
+@aoc_output_formatter(2015, 13, 2, "Max happiness with me included", assert_answer=725)
 def part_two(people, happiness_map):
     return max(__evaluate_seating_chart(chart, happiness_map) for chart in permutations(people))
 

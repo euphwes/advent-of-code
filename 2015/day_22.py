@@ -153,7 +153,7 @@ def simulate_battle(player, boss):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 22, 1, 'minimum mana to spend and still win')
+@aoc_output_formatter(2015, 22, 1, 'minimum mana to spend and still win', assert_answer=900)
 def part_one():
     global _ACTIVE_EFFECTS, _ACTIVE_EFFECT_NAMES
 
@@ -178,7 +178,7 @@ def part_one():
     return min(winning_mana_costs)
 
 
-@aoc_output_formatter(2015, 22, 2, 'minimum mana to spend and still win on hard')
+@aoc_output_formatter(2015, 22, 2, 'minimum mana to spend and still win on hard', assert_answer=1216)
 def part_two():
     global _IS_HARD, _ACTIVE_EFFECTS, _ACTIVE_EFFECT_NAMES
     _IS_HARD = True

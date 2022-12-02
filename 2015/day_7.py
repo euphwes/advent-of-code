@@ -79,13 +79,13 @@ def __evaluate_all_signals(connections):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 7, 1, 'signal on wire a')
+@aoc_output_formatter(2015, 7, 1, 'signal on wire a', assert_answer=16076)
 def part_one(connections):
     wires = __evaluate_all_signals(connections)
     return wires['a']
 
 
-@aoc_output_formatter(2015, 7, 2, 'signal on wire a')
+@aoc_output_formatter(2015, 7, 2, 'signal on wire a', assert_answer=2797)
 def part_two(connections):
     wires = __evaluate_all_signals(connections)
     return wires['a']

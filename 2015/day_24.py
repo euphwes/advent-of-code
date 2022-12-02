@@ -42,11 +42,11 @@ def _get_qe_of_ideal_first_package_group(packages, num_package_groups):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 24, 1, 'ideal quantum entanglement of 1st of 3 groups of packages')
+@aoc_output_formatter(2015, 24, 1, 'ideal quantum entanglement of 1st of 3 groups of packages', assert_answer=11266889531)
 def part_one(packages, num_package_groups):
     return _get_qe_of_ideal_first_package_group(packages, num_package_groups)
 
-@aoc_output_formatter(2015, 24, 2, 'ideal quantum entanglement of 1st of 4 groups of packages')
+@aoc_output_formatter(2015, 24, 2, 'ideal quantum entanglement of 1st of 4 groups of packages', assert_answer=77387711)
 def part_two(packages, num_package_groups):
     return _get_qe_of_ideal_first_package_group(packages, num_package_groups)
 

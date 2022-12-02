@@ -23,7 +23,8 @@ def __count_decoded(s):
 
         # If it's \xAB, we need to skip over the next three escape sequence characters.
         if s[i+1] == 'x':
-            (next(s_iterable) for _ in range(3))
+            for _ in range(3):
+                next(s_iterable)
 
         # Otherwise it must be either \\ or \", the only other two escape sequences, so we can
         # just skip the next character.
@@ -37,16 +38,16 @@ def __count_encoded(s):
     """ Counts the number of characters in the encodes representation of the supplied string. """
 
     # Start with 2 for the framing quotes, then add 2 for literal " or \, and 1 for everything else
-    return 2 + sum((2 if c in ('\\', '\"') else 1 for c in s))
+    return 2 + sum(2 if c in ('\\', '\"') else 1 for c in s)
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 8, 1, 'answer')
+@aoc_output_formatter(2015, 8, 1, 'answer', assert_answer=1333)
 def part_one(lines):
     return sum(len(s) for s in lines) - sum(__count_decoded(s) for s in lines)
 
 
-@aoc_output_formatter(2015, 8, 2, 'answer')
+@aoc_output_formatter(2015, 8, 2, 'answer', assert_answer=2046)
 def part_two(lines):
      return sum(__count_encoded(s) for s in lines) - sum(len(s) for s in lines)
 

@@ -28,14 +28,14 @@ def __run_length_encode(s):
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 10, 1, 'length after 40 RLEs')
+@aoc_output_formatter(2015, 10, 1, 'length after 40 RLEs', assert_answer=492982)
 def part_one(s, n):
     for _ in range(n):
         s = __run_length_encode(s)
     return len(s)
 
 
-@aoc_output_formatter(2015, 10, 2, 'length after 50 RLEs')
+@aoc_output_formatter(2015, 10, 2, 'length after 50 RLEs', assert_answer=6989950)
 def part_two(s, n):
     for _ in range(n):
         s = __run_length_encode(s)

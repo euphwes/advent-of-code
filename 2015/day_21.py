@@ -92,7 +92,7 @@ def get_item_combos():
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 21, 1, 'minimum gold to spend and still win')
+@aoc_output_formatter(2015, 21, 1, 'minimum gold to spend and still win', assert_answer=78)
 def part_one():
     costs_of_winning_item_combos = list()
     for items in get_item_combos():
@@ -109,7 +109,7 @@ def part_one():
     return min(costs_of_winning_item_combos)
 
 
-@aoc_output_formatter(2015, 21, 2, 'maximum gold to spend and still lose')
+@aoc_output_formatter(2015, 21, 2, 'maximum gold to spend and still lose', assert_answer=148)
 def part_two():
     costs_of_losing_item_combos = list()
     for items in get_item_combos():

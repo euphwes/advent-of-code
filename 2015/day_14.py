@@ -42,12 +42,12 @@ class Reindeer:
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 14, 1, "Furthest distance traveled by a reindeer")
+@aoc_output_formatter(2015, 14, 1, "Furthest distance traveled by a reindeer", assert_answer=2660)
 def part_one(reindeer, time):
     return max(r.fly(time) for r in reindeer)
 
 
-@aoc_output_formatter(2015, 14, 2, "Most points obtained by a reindeer")
+@aoc_output_formatter(2015, 14, 2, "Most points obtained by a reindeer", assert_answer=1256)
 def part_two(reindeer, time):
     reindeer_points    = {r.name: 0 for r in reindeer}
     reindeer_distances = {r.name: 0 for r in reindeer}

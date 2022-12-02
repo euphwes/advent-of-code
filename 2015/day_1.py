@@ -7,12 +7,12 @@ paren_map = lambda char: 1 if char == '(' else -1
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 1, 1, 'floor')
+@aoc_output_formatter(2015, 1, 1, 'floor', assert_answer=138)
 def part_one(floor_instructions):
     return sum([paren_map(char) for char in floor_instructions])
 
 
-@aoc_output_formatter(2015, 1, 2, 'basement index')
+@aoc_output_formatter(2015, 1, 2, 'basement index', assert_answer=1771)
 def part_two(floor_instructions):
     floor = 0
     for i, val in enumerate([paren_map(char) for char in floor_instructions]):
