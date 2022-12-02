@@ -1,6 +1,7 @@
 import os
 import sys
 import importlib
+from util.decorators import __aocTimer
 
 #---------------------------------------------------------------------------------------------------
 
@@ -68,16 +69,25 @@ def __get_all_days_for_year(year):
     days.sort()
     return days
 
+
+@__aocTimer()
+def __run_all():
+    """ Runs all solutions for every year, in order. """
+
+    for year in __get_all_years():
+        print('\n============\n    {}    \n============'.format(year))
+        for day in __get_all_days_for_year(year):
+            module, input_file = __get_module_and_input_path(year=year, day=day)
+            importlib.import_module(module).run(input_file)
+
+    print('\n******** Finished running all completed Advent of Code problems! ********')
+
 #---------------------------------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
     if 'all' in sys.argv:
-        for year in __get_all_years():
-            print('\n============\n    {}    \n============'.format(year))
-            for day in __get_all_days_for_year(year):
-                module, input_file = __get_module_and_input_path(year=year, day=day)
-                importlib.import_module(module).run(input_file)
+        __run_all()
 
     else:
         module, input_file = __get_module_and_input_path()
