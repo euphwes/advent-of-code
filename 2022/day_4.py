@@ -17,7 +17,6 @@ def _get_assignments(elf_pair):
     return _get_elf_sections(elf_1), _get_elf_sections(elf_2)
 
 
-
 @aoc_output_formatter(2022, 4, 1, 'count of elf pairs where assignments fully contain the other', assert_answer=567)
 def part_one(elf_pairs):
     
