@@ -4,17 +4,20 @@ from util.input import get_input
 DAY  = 1
 YEAR = 2018
 
-PART_ONE_DESC = 'resulting frequency'
-PART_TWO_DESC = 'first frequency reached twice'
+PART_ONE_DESCRIPTION = 'resulting frequency'
+PART_ONE_ANSWER = 420
+
+PART_TWO_DESCRIPTION = 'first frequency reached twice'
+PART_TWO_ANSWER = 227
 
 #---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESC, assert_answer=420)
+@aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(frequency_changes):
     return sum(frequency_changes)
 
 
-@aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESC, assert_answer=227)
+@aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(frequency_changes):
 
     frequency = 0
