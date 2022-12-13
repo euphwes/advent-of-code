@@ -38,3 +38,21 @@ def get_tokenized_input(input_file, split_str, transform=DO_NOTHING):
     transformed = [[transform(t) for t in line] for line in tokenized]
 
     return transformed
+
+
+# Allows us to `eval` input lines which describe nested lists of integers and other lists
+ACCEPTABLE_EVAL_CHARS = set('[],0123456789')
+
+
+def safe_eval(raw_line):
+    """ Returns the `eval` of the provided line if it contains any content. Ensures the operation is
+    safe before performing `eval` by making sure the line only contains acceptable characters, so
+    we're not doing any os or sys calls, etc. Returns None if the line is empty. """
+
+    if not raw_line:
+        return None
+
+    if not all(char in ACCEPTABLE_EVAL_CHARS for char in raw_line):
+        raise ValueError(f'"{raw_line}" contains characters which are not allowed.')
+
+    return eval(raw_line)
