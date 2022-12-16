@@ -1,6 +1,7 @@
 from collections import defaultdict
 from copy import copy
-from itertools import combinations
+from itertools import combinations, permutations
+from re import I
 
 from util.decorators import aoc_output_formatter
 from util.input import get_input
@@ -62,7 +63,6 @@ def _get_distance_between(a, b, connections):
             queue.append((neighbor, steps + 1))  # type: ignore
 
 
-#
 def _get_distance_map(connections, valves_to_visit, starting_valve):
 
     distance_map = dict()
@@ -76,9 +76,37 @@ def _get_distance_map(connections, valves_to_visit, starting_valve):
         distance_map[(a, b)] = distance
         distance_map[(b, a)] = distance
 
+    return distance_map
+
+
+def _score_valve_visit_order(start, perm, rates, distances, minutes_left):
+
+    curr_valve = start
+    score = 0
+
+    while minutes_left > 0:
+        next_valve = perm.pop(0)
+
+        distance = distances[(curr_valve, next_valve)]
+        minutes_left -= distance + 1
+
+        score += minutes_left * rates[next_valve]
+
+        if minutes_left <= 0:
+            break
+
+        curr_valve = next_valve
+        if not perm:
+            break
+
+    return score
+
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(stuff):
+
+    start_valve = "AA"
+    total_minutes = 30
 
     valve_states, valve_rates, connections = _parse_stuff(stuff)
 
@@ -86,7 +114,20 @@ def part_one(stuff):
     valves_to_visit = {
         valve for valve, state in valve_states.items() if state == VALVE_CLOSED
     }
-    valve_distances = _get_distance_map(connections, valves_to_visit, "AA")
+    valve_distances = _get_distance_map(connections, valves_to_visit, start_valve)
+
+    max_score = 0
+    for perm in permutations(valves_to_visit, len(valves_to_visit)):
+        walk_score = _score_valve_visit_order(
+            start_valve,
+            list(perm),
+            valve_rates,
+            valve_distances,
+            total_minutes,
+        )
+        max_score = max([walk_score, max_score])
+
+    return max_score
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
