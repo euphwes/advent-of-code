@@ -7,6 +7,8 @@ from util.input import get_input
 ## TODO can we find cycles of 0-flow valves leading to one another and remove?
 ## how else to reduce search space?
 
+## can we prune finished branches where all valves are open, from connections ?
+
 DAY = 16
 YEAR = 2022
 
@@ -22,13 +24,55 @@ VALVE_CLOSED = "closed"
 DO_TRIM_MOST_PROMISING = False
 
 
-def _trim_down(states_list, threshold_size, target_count):
+def _maybe_trim_down(states_list, threshold_size, target_count):
     if not DO_TRIM_MOST_PROMISING:
         return states_list
     if len(states_list) > threshold_size:
         states_list.sort(key=lambda s: s.release_pressure)
         states_list = states_list[-1 * target_count :]
     return states_list
+
+
+def _is_node_still_relevant(check_me, previous, states, conns, seen):
+    seen.add(check_me)
+
+    # if this valve is still closed, it's relevant
+    if states[check_me] == VALVE_CLOSED:
+        return True
+
+    # if this valve is already open...
+
+    # if it connects to only 1 thing, it's a dead end, it's irrelevant
+    if len(conns[check_me]) == 1:
+        return False
+
+    # if it connects to more than 1 thing, it's still relevant if any of its downstream
+    # are still relevant
+    for neighbor in [n for n in conns[check_me] if n != previous and n not in seen]:
+        new_check_me = neighbor
+        new_previous = check_me
+        if _is_node_still_relevant(new_check_me, new_previous, states, conns, seen):
+            return True
+
+    # if none downstream are relevant, this is not relevant
+    return False
+
+
+def _prune_connections(conns, states, skip=False):
+
+    if skip:
+        return conns
+
+    new_conns = dict()
+
+    for valve, neighbors in conns.items():
+        new_neighbors = set()
+        for neighbor in neighbors:
+            if _is_node_still_relevant(neighbor, valve, states, conns, set()):
+                new_neighbors.add(neighbor)
+        new_conns[valve] = new_neighbors
+
+    return new_conns
 
 
 def _parse_stuff(stuff):
@@ -49,6 +93,8 @@ def _parse_stuff(stuff):
         dest_info = dest_info.replace("tunnel leads to valve ", "")
         valve_connections[valve_num] = dest_info.split(", ")
 
+        valve_state[valve_num] = VALVE_CLOSED
+
     return valve_state, valve_flow_rate, valve_connections, valves
 
 
@@ -62,6 +108,7 @@ class ValveVisitState:
         states,
         release_pressure,
         min_remaining,
+        conns,
     ):
         self.elf_valve = elf_valve
         self.elephant_valve = elephant_valve
@@ -70,6 +117,10 @@ class ValveVisitState:
         self.states = states
         self.release_pressure = release_pressure
         self.minutes_remaining = min_remaining
+        self.conns = conns
+
+    def __str__(self):
+        return f"elf={self.elf_valve}, elephant={self.elephant_valve}, pressure={self.release_pressure}"
 
     def elf_valve_is_closed(self):
         return self.states[self.elf_valve] == VALVE_CLOSED
@@ -78,7 +129,13 @@ class ValveVisitState:
         return self.states[self.elephant_valve] == VALVE_CLOSED
 
 
-def _get_states_at_depth(curr: ValveVisitState, rates, conns):
+def _get_states_at_depth(curr: ValveVisitState, rates):
+
+    # if all valves are open, stay put
+    if all(s == VALVE_OPEN for s in curr.states.values()):
+        nextstate = copy(curr)
+        nextstate.minutes_remaining -= 1
+        return [nextstate]
 
     next_elf_states = list()
 
@@ -91,6 +148,7 @@ def _get_states_at_depth(curr: ValveVisitState, rates, conns):
         next_release_pressure = curr.release_pressure + (
             (curr.minutes_remaining - 1) * rates[curr.elf_valve]
         )
+
         next_elf_states.append(
             ValveVisitState(
                 elf_valve=curr.elf_valve,
@@ -100,12 +158,13 @@ def _get_states_at_depth(curr: ValveVisitState, rates, conns):
                 states=next_states,
                 release_pressure=next_release_pressure,
                 min_remaining=curr.minutes_remaining - 1,
+                conns=_prune_connections(curr.conns, next_states, skip=True),
             )
         )
 
     # or we could visit an adjacent valve, except it doesn't make sense to return backwards
-    for neighbor in conns[curr.elf_valve]:
-        if neighbor == curr.elf_previous and len(conns[curr.elf_valve]) > 1:
+    for neighbor in curr.conns[curr.elf_valve]:
+        if neighbor == curr.elf_previous and len(curr.conns[curr.elf_valve]) > 1:
             continue
         next_elf_states.append(
             ValveVisitState(
@@ -116,6 +175,7 @@ def _get_states_at_depth(curr: ValveVisitState, rates, conns):
                 states=copy(curr.states),
                 release_pressure=curr.release_pressure,
                 min_remaining=curr.minutes_remaining - 1,
+                conns=_prune_connections(curr.conns, curr.states, skip=True),
             )
         )
 
@@ -123,7 +183,7 @@ def _get_states_at_depth(curr: ValveVisitState, rates, conns):
 
     # save memory, try to prune lowest flow states? maybe speed up
     # probably get rid of this in a good impl
-    next_elf_states = _trim_down(next_elf_states, 2, 2)
+    next_elf_states = _maybe_trim_down(next_elf_states, 2, 2)
 
     next_total_valve_states = list()
 
@@ -151,19 +211,23 @@ def _get_states_at_depth(curr: ValveVisitState, rates, conns):
                     states=elph_next_states,
                     release_pressure=elph_next_release_pressure,
                     min_remaining=half_finished_state.minutes_remaining,
+                    conns=_prune_connections(
+                        half_finished_state.conns, elph_next_states, skip=True
+                    ),
                 )
             )
 
         # or elephant could visit an adjacent valve, except it doesn't make sense to return backwards
-        for neighbor in conns[half_finished_state.elephant_valve]:
+        for neighbor in half_finished_state.conns[half_finished_state.elephant_valve]:
             if (
                 neighbor == half_finished_state.elephant_previous
-                and len(conns[half_finished_state.elephant_valve]) > 1
+                and len(half_finished_state.conns[half_finished_state.elephant_valve])
+                > 1
             ):
                 continue
 
             # doesn't make sense for the elephant to go where the elf was
-            # this makes an empty list
+            # this makes an empty list ???
             # if neighbor == half_finished_state.elf_previous:
             #     continue
 
@@ -176,9 +240,12 @@ def _get_states_at_depth(curr: ValveVisitState, rates, conns):
                     elephant_valve=neighbor,
                     elf_previous=half_finished_state.elf_previous,
                     elephant_previous=half_finished_state.elephant_valve,
-                    states=half_finished_state.states,
+                    states=copy(half_finished_state.states),
                     release_pressure=half_finished_state.release_pressure,
                     min_remaining=half_finished_state.minutes_remaining,
+                    conns=_prune_connections(
+                        half_finished_state.conns, half_finished_state.states, skip=True
+                    ),
                 )
             )
 
@@ -193,15 +260,15 @@ def _get_states_at_depth(curr: ValveVisitState, rates, conns):
 
     # save memory, try to prune lowest flow states? maybe speed up
     # probably get rid of this in a good impl
-    next_total_valve_states = _trim_down(next_total_valve_states, 4, 2)
+    next_total_valve_states = _maybe_trim_down(next_total_valve_states, 2, 2)
 
     next_minute_states = list()
     for state in next_total_valve_states:
-        next_minute_states.extend(_get_states_at_depth(state, rates, conns))
+        next_minute_states.extend(_get_states_at_depth(state, rates))
 
     # save memory, try to prune lowest flow states? maybe speed up
     # probably get rid of this in a good impl
-    next_minute_states = _trim_down(next_minute_states, 4, 2)
+    next_minute_states = _maybe_trim_down(next_minute_states, 2, 2)
 
     return next_minute_states
 
@@ -233,7 +300,12 @@ def part_two(stuff):
 
     starting_states, rates, conns, valves = _parse_stuff(stuff)
 
-    minutes = 5
+    minutes = 26
+
+    # pretend 0-flow valves are already open, it shouldn't matter
+    for valve, rate in rates.items():
+        if rate == 0:
+            starting_states[valve] = VALVE_OPEN
 
     visit_state = ValveVisitState(
         elf_valve="AA",
@@ -243,15 +315,13 @@ def part_two(stuff):
         states=copy(starting_states),
         release_pressure=0,
         min_remaining=minutes,
+        conns=copy(conns),
     )
 
-    all_states = _get_states_at_depth(visit_state, rates, conns)
+    all_states = _get_states_at_depth(visit_state, rates)
 
     # not 1873
-    foo = max(s.release_pressure for s in all_states)
-    if foo != 102 and minutes == 5:
-        print("Not right")
-    return foo
+    return max(s.release_pressure for s in all_states)
 
 
 # ----------------------------------------------------------------------------------------------
