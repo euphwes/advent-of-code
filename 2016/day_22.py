@@ -1,14 +1,21 @@
+from copy import deepcopy
+from dataclasses import dataclass, field, replace
+from heapq import heappop, heappush
+from itertools import permutations
+from typing import Any, Dict, Tuple
+
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 
-from dataclasses import dataclass, replace, field
-from itertools import permutations
-from typing import Tuple, Any, Dict
+DAY = 22
+YEAR = 2016
 
-from heapq import heappush, heappop
-from copy import deepcopy
+PART_ONE_DESCRIPTION = "pairs of viable nodes"
+PART_ONE_ANSWER = 934
 
-#---------------------------------------------------------------------------------------------------
+PART_TWO_DESCRIPTION = "minimum steps to reach target data"
+PART_TWO_ANSWER = 207
+
 
 @dataclass(eq=True, frozen=True)
 class DiskNode:
@@ -24,14 +31,14 @@ class DiskNode:
 
     def __str__(self):
         if self.coord == (0, 0):
-            return '( )'
+            return "( )"
         if self.has_target_data:
-            return ' * '
+            return " * "
         if self.empty:
-            return '[ ]'
-        if (self.used/self.total) > 0.95:
-            return ' # '
-        return ' . '
+            return "[ ]"
+        if (self.used / self.total) > 0.95:
+            return " # "
+        return " . "
 
 
 @dataclass(eq=True, frozen=True)
@@ -67,40 +74,40 @@ class DiskNodeState:
             line = list()
             for y in range(31):
                 line.append(coord_repr_map[(y, x)])
-            lines.append(' '.join(line))
+            lines.append(" ".join(line))
 
-        print('\n'+'\n'.join(lines)+'\n')
+        print("\n" + "\n".join(lines) + "\n")
 
 
 def _parse_node(line):
-    """ Parses a single input line to build and return a DiskNode. """
+    """Parses a single input line to build and return a DiskNode."""
 
     parts = line.split()
 
     # Filesystem              Size  Used  Avail  Use%
     # /dev/grid/node-x0-y0     94T   73T    21T   77%
 
-    total = int(parts[1].replace('T', ''))
-    used = int(parts[2].replace('T', ''))
-    avail = int(parts[3].replace('T', ''))
+    total = int(parts[1].replace("T", ""))
+    used = int(parts[2].replace("T", ""))
+    avail = int(parts[3].replace("T", ""))
 
-    raw_coord = parts[0].replace('/dev/grid/node-', '').split('-')
-    coord = (int(raw_coord[0].replace('x', '')), int(raw_coord[1].replace('y', '')))
+    raw_coord = parts[0].replace("/dev/grid/node-", "").split("-")
+    coord = (int(raw_coord[0].replace("x", "")), int(raw_coord[1].replace("y", "")))
 
     return DiskNode(coord, used, avail, total, False)
 
 
 def _parse_input(input_lines):
-    """ Parses the input lines and returns a list of DiskNodes containing the disk node coordinate,
-    the total, used, and available disk space. """
+    """Parses the input lines and returns a list of DiskNodes containing the disk node
+    coordinate, the total, used, and available disk space."""
 
     # Discard the top two lines (the `df` command and the column headers)
     input_lines = input_lines[2:]
 
     nodes = [_parse_node(line) for line in input_lines]
 
-    # Find the maximum x value, and then mark the node at coordinate (max_x, 0) as the one with the
-    # target data.
+    # Find the maximum x value, and then mark the node at coordinate (max_x, 0) as the one with
+    # the target data.
     max_x = -1
     for node in nodes:
         if node.coord[0] > max_x:
@@ -118,12 +125,12 @@ def _parse_input(input_lines):
 def _manhattan_distance(c1, c2):
     x1, y1 = c1
     x2, y2 = c2
-    return abs(x1-x2) + abs(y1-y2)
+    return abs(x1 - x2) + abs(y1 - y2)
 
 
 def _get_next_states(current_state):
-    """ Returns options for what the next state of the array could be, after copying data between
-    adjacent pairs of nodes. """
+    """Returns options for what the next state of the array could be, after copying data between
+    adjacent pairs of nodes."""
 
     next_states = list()
     for a in current_state.nodes.values():
@@ -131,10 +138,10 @@ def _get_next_states(current_state):
             continue
 
         x, y = a.coord
-        for neighbor_coord in set([(x-1, y), (x+1, y), (x, y-1), (x, y+1)]):
+        for neighbor_coord in set([(x - 1, y), (x + 1, y), (x, y - 1), (x, y + 1)]):
             try:
                 b = current_state.nodes[neighbor_coord]
-                if a.used+b.used > a.avail:
+                if a.used + b.used > a.avail:
                     continue
             except KeyError:
                 continue
@@ -142,7 +149,12 @@ def _get_next_states(current_state):
             nodes = set()
 
             does_b_have_target_data = b.has_target_data
-            new_a = replace(a, has_target_data=does_b_have_target_data, used=a.used+b.used, avail=a.total-(a.used+b.used))
+            new_a = replace(
+                a,
+                has_target_data=does_b_have_target_data,
+                used=a.used + b.used,
+                avail=a.total - (a.used + b.used),
+            )
             new_b = replace(b, has_target_data=False, used=0, avail=b.total)
 
             # print('\n-----\n\nPossible next state')
@@ -166,7 +178,7 @@ def _get_next_states(current_state):
     return next_states
 
 
-@aoc_output_formatter(2016, 22, 1, 'pairs of viable nodes')
+@aoc_output_formatter(2016, 22, 1, "pairs of viable nodes")
 def part_one(disk_nodes):
     count = 0
     for a, b in permutations(disk_nodes, r=2):
@@ -185,9 +197,8 @@ def _score(state):
     return
 
 
-@aoc_output_formatter(2016, 22, 2, 'minimum steps to reach target data')
+@aoc_output_formatter(2016, 22, 2, "minimum steps to reach target data")
 def part_two(disk_nodes):
-
     state_queue = list()
     start_state = DiskNodeState(nodes={node.coord: node for node in disk_nodes})
 
@@ -224,10 +235,10 @@ def part_two(disk_nodes):
     return 207
 
 
-#---------------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------
+
 
 def run(input_file):
-
     disk_nodes = _parse_input(get_input(input_file))
 
     part_one(disk_nodes)

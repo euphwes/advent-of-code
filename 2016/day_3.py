@@ -1,25 +1,33 @@
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 
-#---------------------------------------------------------------------------------------------------
+DAY = 3
+YEAR = 2016
+
+PART_ONE_DESCRIPTION = "possible triangles"
+PART_ONE_ANSWER = 1032
+
+PART_TWO_DESCRIPTION = "possible triangles"
+PART_TWO_ANSWER = 1838
+
 
 def _is_possible_triangle(side_lengths):
-
     s1, s2, s3 = side_lengths
-    return (s1+s2 > s3) and (s2+s3 > s1) and (s1+s3 > s2)
+    return (s1 + s2 > s3) and (s2 + s3 > s1) and (s1 + s3 > s2)
 
-#---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2016, 3, 1, 'possible triangles')
+@aoc_output_formatter(2016, 3, 1, "possible triangles")
 def part_one(potential_triangles):
     return sum([1 for tri in potential_triangles if _is_possible_triangle(tri)])
 
 
-@aoc_output_formatter(2016, 3, 2, 'possible triangles')
+@aoc_output_formatter(2016, 3, 2, "possible triangles")
 def part_two(potential_triangles):
     return sum([1 for tri in potential_triangles if _is_possible_triangle(tri)])
 
-#---------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------
+
 
 def run(input_file):
 
