@@ -1,4 +1,6 @@
 from collections import defaultdict
+from copy import copy
+from itertools import combinations
 
 from util.decorators import aoc_output_formatter
 from util.input import get_input
@@ -26,45 +28,65 @@ def _parse_stuff(stuff):
         valve_num = valve_info[6:8]
         valve_rate = int(valve_info[valve_info.index("=") + 1 :])
 
-        valve_flow_rate[valve_num] = valve_rate
-
         dest_info = dest_info.replace("tunnels lead to valves ", "")
         dest_info = dest_info.replace("tunnel leads to valve ", "")
         valve_connections[valve_num] = dest_info.split(", ")
 
+        valve_flow_rate[valve_num] = valve_rate
         valve_state[valve_num] = VALVE_CLOSED
+
+    # All of the zero-valued flow rate valves, just consider them open to start with, because it
+    # we don't need to consider them to be opened anyway.
+    for valve, rate in valve_flow_rate.items():
+        if rate == 0:
+            valve_state[valve] = VALVE_OPEN
 
     return valve_state, valve_flow_rate, valve_connections
 
 
-def _yield_all_walks_of_len(n, curr_valve, conns):
+def _get_distance_between(a, b, connections):
 
-    walks_from_curr = list()
-    for neighbor in conns[curr_valve]:
-        walks_from_curr.append([neighbor])
+    steps = 0
+    queue = [(a, 0)]
+    visited = set()
 
-    if n == 1:
-        yield from walks_from_curr
-    else:
-        for walk in walks_from_curr:
-            next_valve = walk[0]
-            for shorter_walk in _yield_all_walks_of_len(n - 1, next_valve, conns):
-                yield walk + shorter_walk
+    while queue:
+        curr, steps = queue.pop(0)
+        if curr == b:
+            return steps
+
+        for neighbor in connections[curr]:
+            if neighbor in visited:
+                continue
+            visited.add(neighbor)
+            queue.append((neighbor, steps + 1))  # type: ignore
+
+
+#
+def _get_distance_map(connections, valves_to_visit, starting_valve):
+
+    distance_map = dict()
+
+    relevant_valves = copy(valves_to_visit)
+    relevant_valves.add(starting_valve)
+
+    for a, b in combinations(relevant_valves, 2):
+
+        distance = _get_distance_between(a, b, connections)
+        distance_map[(a, b)] = distance
+        distance_map[(b, a)] = distance
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(stuff):
 
-    starting_states, rates, conns = _parse_stuff(stuff)
-    minutes = 3
+    valve_states, valve_rates, connections = _parse_stuff(stuff)
 
-    curr_valve = "AA"
-    prev_valve = None
-
-    for walk in _yield_all_walks_of_len(minutes, curr_valve, conns):
-        print(walk)
-
-    return f"visited all walks of len={minutes}"
+    # These are the only valves that we need to worry about visiting.
+    valves_to_visit = {
+        valve for valve, state in valve_states.items() if state == VALVE_CLOSED
+    }
+    valve_distances = _get_distance_map(connections, valves_to_visit, "AA")
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
