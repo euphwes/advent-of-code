@@ -1,58 +1,69 @@
 from util.decorators import aoc_output_formatter
 from util.input import get_tokenized_input
 
-from itertools import product
+DAY = 16
+YEAR = 2015
 
-#---------------------------------------------------------------------------------------------------
+PART_ONE_DESCRIPTION = "Aunt Sue #"
+PART_ONE_ANSWER = 40
 
-def __parse_mfcsam_output(output):
-    """ Parses the output from the MFCSAM analyzer and returns a map containing the number of each
-    type of thing it found. """
+PART_TWO_DESCRIPTION = "Correct Aunt Sue #"
+PART_TWO_ANSWER = 241
+
+
+def _parse_mfcsam_output(output):
+    """Parses the output from the MFCSAM analyzer and returns a map containing the number of
+    each type of thing it found."""
 
     values = dict()
 
-    for line in output.split('\n'):
+    for line in output.split("\n"):
         line = line.strip()
-        thing, amount = line.split(': ')
+        thing, amount = line.split(": ")
         values[thing] = int(amount)
 
     return values
 
 
-def __parse_aunt_sue(line):
-    """ Parses a description of what the elf remembers about this particular Aunt Sue. """
+def _parse_aunt_sue(line):
+    """Parses a description of what the elf remembers about this particular Aunt Sue."""
 
     # ex: `Sue 1: goldfish: 9, cars: 0, samoyeds: 9`
     sue = dict()
 
     # Extract the number of this Aunt Sue from the first portion, and then separate the rest
-    first_colon_ix = line.index(':')
-    number, rest = int(line[:first_colon_ix].replace('Sue ','')), line[first_colon_ix + 2:]
-    sue['number'] = number
+    first_colon_ix = line.index(":")
+    number, rest = (
+        int(line[:first_colon_ix].replace("Sue ", "")),
+        line[first_colon_ix + 2 :],
+    )
+    sue["number"] = number
 
     # For the remainder, extract the property and value for the things about this Aunt Sue
-    for token in rest.split(', '):
-        attr, amount = token.split(': ')
+    for token in rest.split(", "):
+        attr, amount = token.split(": ")
         sue[attr] = int(amount)
 
     return sue
 
+
 # Save some comparators (equal, less than, greater than) so we can shove them in a map for the
 # property we're checking for each Aunt Sue
-__eq = lambda sue, other: sue == other
-__lt = lambda sue, other: sue < other
-__gt = lambda sue, other: sue > other
+_eq = lambda sue, other: sue == other
+_lt = lambda sue, other: sue < other
+_gt = lambda sue, other: sue > other
 
 # The correct comparators
 __mfcsam_comparators = {
-    'cats':        __gt,
-    'trees':       __gt,
-    'goldfish':    __lt,
-    'pomeranians': __lt
+    "cats": _gt,
+    "trees": _gt,
+    "goldfish": _lt,
+    "pomeranians": _lt,
 }
 
-def __check_aunt_sues(sue_list, attributes, comparator_map):
-    """ Check each Aunt Sue against the attributes from the MFCSAM to see which Sue is a match. """
+
+def _check_aunt_sues(sue_list, attributes, comparator_map):
+    """Check each Aunt Sue against the attributes from the MFCSAM to see which Sue matches."""
 
     for sue in sue_list:
         # Start by assuming this Sue is the correct one
@@ -65,13 +76,13 @@ def __check_aunt_sues(sue_list, attributes, comparator_map):
             if attr not in sue.keys():
                 continue
 
-            # If we do remember, check if matches this Aunt Sue.
-            # If it doesn't, we know this isn't the right Sue, and we skip checking the other attrs
-            # Use the supplied comparator between what you remember about this Sue and the attribute
-            # we're checking.
+            # If we do remember, check if matches this Aunt Sue. If it doesn't, we know this
+            # isn't the right Sue, and we skip checking the other attrs. Use the supplied
+            # comparator between what you remember about this Sue and the attribute we're
+            # checking.
 
             # Get the right comparator for this attribute, falling back on checking equality
-            comparator = comparator_map.get(attr, __eq)
+            comparator = comparator_map.get(attr, _eq)
 
             if not comparator(sue[attr], number):
                 is_correct_sue = False
@@ -79,36 +90,40 @@ def __check_aunt_sues(sue_list, attributes, comparator_map):
 
         # If we didn't otherwise indicate this Sue was the wrong one, it must be right!
         if is_correct_sue:
-            return sue['number']
+            return sue["number"]
 
-#---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 16, 1, "Aunt Sue #", assert_answer=40)
+@aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(sue_list, attributes):
-    return __check_aunt_sues(sue_list, attributes, dict())
+    return _check_aunt_sues(sue_list, attributes, dict())
 
 
-@aoc_output_formatter(2015, 16, 2, "Correct Aunt Sue #", assert_answer=241)
+@aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(sue_list, attributes):
-    return __check_aunt_sues(sue_list, attributes, __mfcsam_comparators)
+    return _check_aunt_sues(sue_list, attributes, __mfcsam_comparators)
 
-#---------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------
+
 
 def run(input_file):
 
-    # Parse Aunt Sue list from the input file
-    aunt_sue_list = [__parse_aunt_sue(line[0]) for line in get_tokenized_input(input_file, '\n')]
+    aunt_sue_list = [
+        _parse_aunt_sue(line[0]) for line in get_tokenized_input(input_file, "\n")
+    ]
 
-    properties = __parse_mfcsam_output("""children: 3
-                      cats: 7
-                      samoyeds: 2
-                      pomeranians: 3
-                      akitas: 0
-                      vizslas: 0
-                      goldfish: 5
-                      trees: 3
-                      cars: 2
-                      perfumes: 1""")
+    properties = _parse_mfcsam_output(
+        """children: 3
+           cats: 7
+           samoyeds: 2
+           pomeranians: 3
+           akitas: 0
+           vizslas: 0
+           goldfish: 5
+           trees: 3
+           cars: 2
+           perfumes: 1"""
+    )
 
     part_one(aunt_sue_list, properties)
     part_two(aunt_sue_list, properties)

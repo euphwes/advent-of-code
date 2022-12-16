@@ -1,15 +1,23 @@
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 
-#---------------------------------------------------------------------------------------------------
+DAY = 8
+YEAR = 2015
 
-def __count_decoded(s):
-    """ Counts the number of decoded characters in an encoded string. """
+PART_ONE_DESCRIPTION = "answer"
+PART_ONE_ANSWER = 1333
+
+PART_TWO_DESCRIPTION = "answer"
+PART_TWO_ANSWER = 2046
+
+
+def _count_decoded(s):
+    """Counts the number of decoded characters in an encoded string."""
 
     count = 0
 
-    # Strip the framing quotes, form an iterable over the stuff inside. Capture the iterable in a
-    # named variable so we can `next(...)` it later to skip characters
+    # Strip the framing quotes, form an iterable over the stuff inside. Capture the iterable in
+    # a named variable so we can `next(...)` it later to skip characters
     s = s[1:-1]
     s_iterable = enumerate(s)
 
@@ -18,11 +26,11 @@ def __count_decoded(s):
         count += 1
 
         # If this character is not a backslash, it's just the literal character.
-        if char != '\\':
+        if char != "\\":
             continue
 
         # If it's \xAB, we need to skip over the next three escape sequence characters.
-        if s[i+1] == 'x':
+        if s[i + 1] == "x":
             for _ in range(3):
                 next(s_iterable)
 
@@ -34,24 +42,25 @@ def __count_decoded(s):
     return count
 
 
-def __count_encoded(s):
-    """ Counts the number of characters in the encodes representation of the supplied string. """
+def _count_encoded(s):
+    """Counts the number of characters in the encodes representation of the supplied string."""
 
-    # Start with 2 for the framing quotes, then add 2 for literal " or \, and 1 for everything else
-    return 2 + sum(2 if c in ('\\', '\"') else 1 for c in s)
+    # Start with 2 for the framing quotes, then add 2 for literal " or \, and 1 for the rest
+    return 2 + sum(2 if c in ("\\", '"') else 1 for c in s)
 
-#---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 8, 1, 'answer', assert_answer=1333)
+@aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(lines):
-    return sum(len(s) for s in lines) - sum(__count_decoded(s) for s in lines)
+    return sum(len(s) for s in lines) - sum(_count_decoded(s) for s in lines)
 
 
-@aoc_output_formatter(2015, 8, 2, 'answer', assert_answer=2046)
+@aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(lines):
-     return sum(__count_encoded(s) for s in lines) - sum(len(s) for s in lines)
+    return sum(_count_encoded(s) for s in lines) - sum(len(s) for s in lines)
 
-#---------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------
+
 
 def run(input_file):
 

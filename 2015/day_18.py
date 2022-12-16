@@ -1,28 +1,38 @@
+from typing import List
+
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 from util.iter import nested_iterable
 from util.structures import get_neighbors_of
 
-#---------------------------------------------------------------------------------------------------
+DAY = 18
+YEAR = 2015
 
-LIGHT_ON = '#'
-LIGHT_OFF = '.'
+PART_ONE_DESCRIPTION = "number of lights on"
+PART_ONE_ANSWER = 821
+
+PART_TWO_DESCRIPTION = "number of lights on"
+PART_TWO_ANSWER = 886
 
 
-def __create_blank_light_grid(width, height):
-    """ Creates a blank light grid with the provided width and height. """
+LIGHT_ON = "#"
+LIGHT_OFF = "."
+
+
+def _create_blank_light_grid(width, height) -> List[list]:
+    """Creates a blank light grid with the provided width and height."""
 
     return [[None] * width for _ in range(height)]
 
 
-def __count_nearby_on_lights(x, y, lights):
-    """ Counts the number of lights neighboring the provided position which are on. """
+def _count_nearby_on_lights(x, y, lights):
+    """Counts the number of lights neighboring the provided position which are on."""
 
     return sum(1 for light in get_neighbors_of(x, y, lights) if light == LIGHT_ON)
 
 
-def __count_total_lights_on(lights):
-    """ Returns a count of lights which are on in the light grid. """
+def _count_total_lights_on(lights):
+    """Returns a count of lights which are on in the light grid."""
 
     lights_on = 0
     for row in lights:
@@ -33,21 +43,16 @@ def __count_total_lights_on(lights):
     return lights_on
 
 
-def __animate_lights(lights, handle_stuck_lights = False):
-    """ Evaluates the light grid and returns its state at the next step in time. """
+def _animate_lights(lights, handle_stuck_lights=False):
+    """Evaluates the light grid and returns its state at the next step in time."""
 
     width = len(lights[0])
     height = len(lights)
 
-    corner_lights = [
-        (0, 0),
-        (0, height-1),
-        (width-1, 0),
-        (width-1, height-1)
-    ]
+    corner_lights = [(0, 0), (0, height - 1), (width - 1, 0), (width - 1, height - 1)]
 
     # Create a new array which hold the state of the lights at the next step in time
-    new_lights = __create_blank_light_grid(width, height)
+    new_lights = _create_blank_light_grid(width, height)
 
     # Iterate over each light and evaluate it to determine what its next state will be
     for x, y in nested_iterable(range(width), range(height)):
@@ -56,7 +61,7 @@ def __animate_lights(lights, handle_stuck_lights = False):
             continue
 
         # Count the number of nearby lights which are on.
-        nearby_on_lights = __count_nearby_on_lights(x, y, lights)
+        nearby_on_lights = _count_nearby_on_lights(x, y, lights)
 
         if lights[y][x] == LIGHT_OFF:
             new_lights[y][x] = LIGHT_ON if nearby_on_lights == 3 else LIGHT_OFF
@@ -66,35 +71,31 @@ def __animate_lights(lights, handle_stuck_lights = False):
 
     return new_lights
 
-#---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 18, 1, "number of lights on", assert_answer=821)
+@aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(lights):
 
     for _ in range(100):
-        lights = __animate_lights(lights, handle_stuck_lights = False)
+        lights = _animate_lights(lights, handle_stuck_lights=False)
 
-    return __count_total_lights_on(lights)
+    return _count_total_lights_on(lights)
 
 
-@aoc_output_formatter(2015, 18, 2, 'number of lights on', assert_answer=886)
+@aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(lights):
 
     # Ensure the 4 corner lights start on
-    max_x = len(lights[0]) - 1
-    max_y = len(lights) - 1
-
-    lights[0][0]         = LIGHT_ON
-    lights[max_y][0]     = LIGHT_ON
-    lights[0][max_x]     = LIGHT_ON
-    lights[max_y][max_x] = LIGHT_ON
+    for x, y in nested_iterable([0, -1], [0, -1]):
+        lights[y][x] = LIGHT_ON
 
     for _ in range(100):
-        lights = __animate_lights(lights, handle_stuck_lights = True)
+        lights = _animate_lights(lights, handle_stuck_lights=True)
 
-    return __count_total_lights_on(lights)
+    return _count_total_lights_on(lights)
 
-#---------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------
+
 
 def run(input_file):
 

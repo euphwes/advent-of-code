@@ -1,14 +1,21 @@
 from util.decorators import aoc_output_formatter
-from util.input import get_tokenized_input
 
-from itertools import permutations
+DAY = 10
+YEAR = 2015
 
-#---------------------------------------------------------------------------------------------------
+PART_ONE_DESCRIPTION = "length after 40 RLEs"
+PART_ONE_ANSWER = 492982
 
-def __run_length_encode(s):
-    """ Run-length encodes the provided string, and returns the result. """
+PART_TWO_DESCRIPTION = "length after 50 RLEs"
+PART_TWO_ANSWER = 6989950
+
+
+def _run_length_encode(s):
+    """Run-length encodes the provided string, and returns the result."""
 
     buffer = list()
+
+    count = 0
     current_char = None
 
     for i, char in enumerate(s):
@@ -24,24 +31,25 @@ def __run_length_encode(s):
     buffer.append(str(count))
     buffer.append(current_char)
 
-    return ''.join(buffer)
+    return "".join(buffer)
 
-#---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 10, 1, 'length after 40 RLEs', assert_answer=492982)
+@aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(s, n):
     for _ in range(n):
-        s = __run_length_encode(s)
+        s = _run_length_encode(s)
     return len(s)
 
 
-@aoc_output_formatter(2015, 10, 2, 'length after 50 RLEs', assert_answer=6989950)
+@aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(s, n):
     for _ in range(n):
-        s = __run_length_encode(s)
+        s = _run_length_encode(s)
     return len(s)
 
-#---------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------
+
 
 def run(input_file):
 

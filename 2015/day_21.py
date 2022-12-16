@@ -1,13 +1,21 @@
-from util.decorators import aoc_output_formatter
-from util.input import get_input
-from util.iter import nested_iterable
-
 from itertools import combinations
 
-#---------------------------------------------------------------------------------------------------
+from util.decorators import aoc_output_formatter
+from util.iter import nested_iterable
 
-ALIVE = 'status_alive'
-DEAD  = 'status_dead'
+DAY = 21
+YEAR = 2015
+
+PART_ONE_DESCRIPTION = "minimum gold to spend to win"
+PART_ONE_ANSWER = 78
+
+PART_TWO_DESCRIPTION = "maximum gold to spend and still lose"
+PART_TWO_ANSWER = 148
+
+
+ALIVE = "status_alive"
+DEAD = "status_dead"
+
 
 class Item:
     def __init__(self, name, cost, damage, armor):
@@ -30,7 +38,7 @@ class Actor:
         self.status = ALIVE
 
     def take_damage(self, raw_damage):
-        """ Takes damage frow the raw damage supplied, offset by armor. """
+        """Takes damage frow the raw damage supplied, offset by armor."""
 
         self.hp -= max(raw_damage - self.armor, 1)
         if self.hp <= 0:
@@ -38,7 +46,7 @@ class Actor:
 
 
 def simulate_battle(player, boss):
-    """ Simulates a battle between the supplied player Actor and boss Actor. Returns the victor. """
+    """Simulates a battle between the player Actor and boss Actor. Returns the victor."""
 
     while True:
         # player attacks boss
@@ -51,37 +59,36 @@ def simulate_battle(player, boss):
         if player.status == DEAD:
             return boss
 
-#---------------------------------------------------------------------------------------------------
 
 weapons = [
-    Item('Dagger',      8, 4, 0),
-    Item('Shortsword', 10, 5, 0),
-    Item('Warhammer',  25, 6, 0),
-    Item('Longsword',  40, 7, 0),
-    Item('Greataxe',   74, 8, 0)
+    Item("Dagger", 8, 4, 0),
+    Item("Shortsword", 10, 5, 0),
+    Item("Warhammer", 25, 6, 0),
+    Item("Longsword", 40, 7, 0),
+    Item("Greataxe", 74, 8, 0),
 ]
 
 armors = [
-    Item('None',        0, 0, 0),
-    Item('Leather',    13, 0, 1),
-    Item('Chainmail',  31, 0, 2),
-    Item('Splintmail', 53, 0, 3),
-    Item('Bandemail',  75, 0, 4),
-    Item('Platemail', 102, 0, 5)
+    Item("None", 0, 0, 0),
+    Item("Leather", 13, 0, 1),
+    Item("Chainmail", 31, 0, 2),
+    Item("Splintmail", 53, 0, 3),
+    Item("Bandemail", 75, 0, 4),
+    Item("Platemail", 102, 0, 5),
 ]
 
 rings = [
-    Item('Damage +1',  25, 1, 0),
-    Item('Damage +2',  50, 2, 0),
-    Item('Damage +3', 100, 3, 0),
-    Item('Defense +1', 20, 0, 1),
-    Item('Defense +2', 40, 0, 2),
-    Item('Defense +3', 80, 0, 3)
+    Item("Damage +1", 25, 1, 0),
+    Item("Damage +2", 50, 2, 0),
+    Item("Damage +3", 100, 3, 0),
+    Item("Defense +1", 20, 0, 1),
+    Item("Defense +2", 40, 0, 2),
+    Item("Defense +3", 80, 0, 3),
 ]
 
 
 def get_item_combos():
-    """ Yields all valid combinations of items, each set as a list. """
+    """Yields all valid combinations of items, each set as a list."""
 
     for weapon, armor in nested_iterable(weapons, armors):
         for num_rings in range(3):
@@ -90,9 +97,8 @@ def get_item_combos():
                 items.extend(ring_combo)
                 yield items
 
-#---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 21, 1, 'minimum gold to spend and still win', assert_answer=78)
+@aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one():
     costs_of_winning_item_combos = list()
     for items in get_item_combos():
@@ -109,7 +115,7 @@ def part_one():
     return min(costs_of_winning_item_combos)
 
 
-@aoc_output_formatter(2015, 21, 2, 'maximum gold to spend and still lose', assert_answer=148)
+@aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two():
     costs_of_losing_item_combos = list()
     for items in get_item_combos():
@@ -125,7 +131,9 @@ def part_two():
 
     return max(costs_of_losing_item_combos)
 
-#---------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------
+
 
 def run(input_file):
 

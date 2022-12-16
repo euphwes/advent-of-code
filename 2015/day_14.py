@@ -1,22 +1,29 @@
 from util.decorators import aoc_output_formatter
 from util.input import get_tokenized_input
 
-#---------------------------------------------------------------------------------------------------
+DAY = 14
+YEAR = 2015
+
+PART_ONE_DESCRIPTION = "Furthest distance traveled by a reindeer"
+PART_ONE_ANSWER = 2660
+
+PART_TWO_DESCRIPTION = "Most points obtained by a reindeer"
+PART_TWO_ANSWER = 1256
+
 
 class Reindeer:
-    """ Defines a reindeer, which has a name, can fly at a certain speed for a certain amount of
-    time, and then must rest. """
+    """Defines a reindeer, which has a name, can fly at a certain speed for a certain amount of
+    time, and then must rest."""
 
     def __init__(self, input_tokens):
         # Tokens ex: `Vixen can fly 19 km/s for 7 seconds, but then must rest for 124 seconds.`
-        self.name      = input_tokens[0]
-        self.speed     = int(input_tokens[3])
-        self.fly_time  = int(input_tokens[6])
+        self.name = input_tokens[0]
+        self.speed = int(input_tokens[3])
+        self.fly_time = int(input_tokens[6])
         self.rest_time = int(input_tokens[-2])
 
-
     def fly(self, total_time):
-        """ Simulate the reindeer flying for the specified time, and returns the distance flown. """
+        """Simulate the reindeer flying for the specified time, and returns distance flown."""
 
         flight_iterator = self.stepwise_fly()
 
@@ -25,10 +32,9 @@ class Reindeer:
 
         return next(flight_iterator)
 
-
     def stepwise_fly(self):
-        """ Simulate the reindeer flying one second at a time, yielding the current distance
-        traveled at each time step. """
+        """Simulate the reindeer flying one second at a time, yielding the current distance
+        traveled at each time step."""
 
         # Alternate between flying and resting
         distance = 0
@@ -40,18 +46,17 @@ class Reindeer:
             for _ in range(self.rest_time):
                 yield distance
 
-#---------------------------------------------------------------------------------------------------
 
-@aoc_output_formatter(2015, 14, 1, "Furthest distance traveled by a reindeer", assert_answer=2660)
+@aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(reindeer, time):
     return max(r.fly(time) for r in reindeer)
 
 
-@aoc_output_formatter(2015, 14, 2, "Most points obtained by a reindeer", assert_answer=1256)
+@aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(reindeer, time):
-    reindeer_points    = {r.name: 0 for r in reindeer}
+    reindeer_points = {r.name: 0 for r in reindeer}
     reindeer_distances = {r.name: 0 for r in reindeer}
-    reindeer_flights   = [(r.name, r.stepwise_fly()) for r in reindeer]
+    reindeer_flights = [(r.name, r.stepwise_fly()) for r in reindeer]
 
     for _ in range(time):
         for reindeer, flight in reindeer_flights:
@@ -63,12 +68,14 @@ def part_two(reindeer, time):
 
     return max(reindeer_points.values())
 
-#---------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------
+
 
 def run(input_file):
 
     # Parse reindeer from the input file
-    reindeer = [Reindeer(tokens) for tokens in get_tokenized_input(input_file, ' ')]
+    reindeer = [Reindeer(tokens) for tokens in get_tokenized_input(input_file, " ")]
 
     part_one(reindeer, 2503)
     part_two(reindeer, 2503)
