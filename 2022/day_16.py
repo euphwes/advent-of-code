@@ -89,10 +89,10 @@ def _scores_possible(
 ):
 
     if minutes_left <= 0:
-        return [0]
+        return [(0, valves_to_visit)]
 
     if not valves_to_visit:
-        return [0]
+        return [(0, set())]
 
     valve_and_scores_and_remaining_valves_and_remaining_time = list()
 
@@ -118,7 +118,7 @@ def _scores_possible(
             )
         )
 
-    next_scores = list()
+    next_scores_and_remaining = list()
 
     for (
         next_valve,
@@ -126,7 +126,7 @@ def _scores_possible(
         next_remaining_valves,
         next_min_left,
     ) in valve_and_scores_and_remaining_valves_and_remaining_time:
-        for total_next_score in _scores_possible(
+        for total_next_score, remaining in _scores_possible(
             next_valve,
             next_remaining_valves,
             rates,
@@ -134,9 +134,9 @@ def _scores_possible(
             next_min_left,
             next_starting_score,
         ):
-            next_scores.append(score + total_next_score)
+            next_scores_and_remaining.append((score + total_next_score, remaining))
 
-    return next_scores
+    return next_scores_and_remaining
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
@@ -153,23 +153,62 @@ def part_one(stuff):
     }
     valve_distances = _get_distance_map(connections, valves_to_visit, start_valve)
 
-    return max(
-        _scores_possible(
-            start_valve,
-            valves_to_visit,
-            valve_rates,
-            valve_distances,
-            total_minutes,
-            0,
-        )
+    scores_and_remaining = _scores_possible(
+        start_valve,
+        valves_to_visit,
+        valve_rates,
+        valve_distances,
+        total_minutes,
+        0,
     )
+    scores_and_remaining.sort(key=lambda x: x[0])
+    print(scores_and_remaining[-1])
+    return scores_and_remaining[-1][0]
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(stuff):
 
-    starting_states, rates, conns = _parse_stuff(stuff)
-    minutes = 26
+    # TODO for every result in _scores_possible for the elf with minutes = 26, run the elephant
+    # for 26 minutes with the remaining valves.
+    # IMPORTANT you can remove some elements of the results of _scores_possible, you only need
+    # to consider the max score for each unique set of valves visited
+
+    start_valve = "AA"
+    total_minutes = 26
+
+    valve_states, valve_rates, connections = _parse_stuff(stuff)
+
+    # These are the only valves that we need to worry about visiting.
+    valves_to_visit = {
+        valve for valve, state in valve_states.items() if state == VALVE_CLOSED
+    }
+    valve_distances = _get_distance_map(connections, valves_to_visit, start_valve)
+
+    elf_scores_and_remaining = _scores_possible(
+        start_valve,
+        valves_to_visit,
+        valve_rates,
+        valve_distances,
+        total_minutes,
+        0,
+    )
+
+    total_scores = list()
+    for elf_score, remaining_to_visit in elf_scores_and_remaining:
+        elephant_scores_and_remaining = _scores_possible(
+            start_valve,
+            remaining_to_visit,
+            valve_rates,
+            valve_distances,
+            total_minutes,
+            0,
+        )
+        elephant_scores_and_remaining.sort(key=lambda x: x[0])
+        best_elephant_score = elephant_scores_and_remaining[-1][0]
+        total_scores.append(elf_score + best_elephant_score)
+
+    return max(total_scores)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -180,5 +219,5 @@ def run(input_file):
     stuff = get_input(input_file)
     part_one(stuff)
 
-    # stuff = get_input(input_file)
-    # part_two(stuff)
+    stuff = get_input(input_file)
+    part_two(stuff)
