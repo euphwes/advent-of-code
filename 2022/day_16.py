@@ -195,7 +195,13 @@ def part_two(stuff):
     )
 
     total_scores = list()
+
+    best_scores_for_remaining = defaultdict(int)
     for elf_score, remaining_to_visit in elf_scores_and_remaining:
+        if elf_score > best_scores_for_remaining[frozenset(remaining_to_visit)]:
+            best_scores_for_remaining[frozenset(remaining_to_visit)] = elf_score
+
+    for remaining_to_visit, elf_score in best_scores_for_remaining.items():
         elephant_scores_and_remaining = _scores_possible(
             start_valve,
             remaining_to_visit,
@@ -208,7 +214,69 @@ def part_two(stuff):
         best_elephant_score = elephant_scores_and_remaining[-1][0]
         total_scores.append(elf_score + best_elephant_score)
 
+    # not 2206 (in 66 seconds, or again in 20 seconds, with improvement)
     return max(total_scores)
+
+
+@aoc_output_formatter(YEAR, DAY, 3, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
+def part_three(stuff):
+
+    start_valve = "AA"
+    total_minutes = 26
+
+    valve_states, valve_rates, connections = _parse_stuff(stuff)
+
+    # These are the only valves that we need to worry about visiting.
+    valves_to_visit = {
+        valve for valve, state in valve_states.items() if state == VALVE_CLOSED
+    }
+    valve_distances = _get_distance_map(connections, valves_to_visit, start_valve)
+
+    little_under_half = (len(valves_to_visit) // 2) - 3
+    little_over_half = (len(valves_to_visit) // 2) + 3
+
+    best_score = 0
+
+    for elf_set_size in range(1, len(valve_distances)):
+        for elf_valves_combo in combinations(valves_to_visit, elf_set_size):
+            elf_valves = set(elf_valves_combo)
+            elephant_valves = set(valves_to_visit) - elf_valves
+            # print()
+            # print(elf_valves)
+            # print(elephant_valves)
+
+            elephant_scores_and_remaining = _scores_possible(
+                start_valve,
+                elephant_valves,
+                valve_rates,
+                valve_distances,
+                total_minutes,
+                0,
+            )
+            if not elephant_scores_and_remaining:
+                best_elephant_score = 0
+            else:
+                elephant_scores_and_remaining.sort(key=lambda x: x[0])
+                best_elephant_score = elephant_scores_and_remaining[-1][0]
+
+            elf_scores_and_remaining = _scores_possible(
+                start_valve,
+                elf_valves,
+                valve_rates,
+                valve_distances,
+                total_minutes,
+                0,
+            )
+            if not elf_scores_and_remaining:
+                best_elf_score = 0
+            else:
+                elf_scores_and_remaining.sort(key=lambda x: x[0])
+                best_elf_score = elf_scores_and_remaining[-1][0]
+
+            best_score = max([best_score, best_elf_score + best_elephant_score])
+
+    # not 2257
+    return best_score
 
 
 # ----------------------------------------------------------------------------------------------
@@ -219,5 +287,8 @@ def run(input_file):
     stuff = get_input(input_file)
     part_one(stuff)
 
-    stuff = get_input(input_file)
-    part_two(stuff)
+    # stuff = get_input(input_file)
+    # part_two(stuff)
+
+    # stuff = get_input(input_file)
+    # part_three(stuff)
