@@ -62,6 +62,8 @@ def _get_distance_between(a, b, connections):
             visited.add(neighbor)
             queue.append((neighbor, steps + 1))  # type: ignore
 
+    raise ValueError(f"Couldn't find path between {a} and {b},")
+
 
 def _get_distance_map(connections, valves_to_visit, starting_valve):
 
@@ -72,7 +74,8 @@ def _get_distance_map(connections, valves_to_visit, starting_valve):
 
     for a, b in combinations(relevant_valves, 2):
 
-        distance = _get_distance_between(a, b, connections)
+        # It takes 1 minute to open the valve when you arrive, let's just account for that here
+        distance = _get_distance_between(a, b, connections) + 1
         distance_map[(a, b)] = distance
         distance_map[(b, a)] = distance
 
@@ -86,57 +89,69 @@ def _scores_possible(
     distances,
     minutes_left,
     score,
+    valves_visited,
 ):
 
     if minutes_left <= 0:
-        return [(0, valves_to_visit)]
+        return [(0, valves_to_visit, valves_visited)]
 
     if not valves_to_visit:
-        return [(0, set())]
+        return [(0, set(), valves_visited)]
 
-    valve_and_scores_and_remaining_valves_and_remaining_time = list()
+    valve_and_scores_and_remaining_valves_and_remaining_time_and_visited = list()
 
     for next_valve in valves_to_visit:
         # print()
         # print(f"check curr={curr_valve}, next={next_valve}")
         distance = distances[(curr_valve, next_valve)]
-        this_next_valve_min_left = minutes_left - (distance + 1)
-
-        if this_next_valve_min_left < 0:
+        if distance > minutes_left:
             continue
 
+        this_next_valve_min_left = minutes_left - distance
         this_next_valve_score = this_next_valve_min_left * rates[next_valve]
-        next_remaining_valves = {v for v in valves_to_visit if v != next_valve}
-        # print(f"{next_remaining_valves=}")
 
-        valve_and_scores_and_remaining_valves_and_remaining_time.append(
+        visited_so_far = copy(valves_visited) + [
+            (next_valve, f"min={this_next_valve_min_left}")
+        ]
+
+        # print()
+        # print(f"b={valves_to_visit}")
+        next_remaining_valves = {v for v in valves_to_visit if v != next_valve}
+        # print(f"a={next_remaining_valves}")
+
+        valve_and_scores_and_remaining_valves_and_remaining_time_and_visited.append(
             (
                 next_valve,
                 this_next_valve_score,
                 next_remaining_valves,
                 this_next_valve_min_left,
+                visited_so_far,
             )
         )
 
-    next_scores_and_remaining = list()
+    next_scores_and_remaining_and_visited = list()
 
     for (
         next_valve,
         next_starting_score,
         next_remaining_valves,
         next_min_left,
-    ) in valve_and_scores_and_remaining_valves_and_remaining_time:
-        for total_next_score, remaining in _scores_possible(
+        visited_so_far,
+    ) in valve_and_scores_and_remaining_valves_and_remaining_time_and_visited:
+        for total_next_score, remaining, visited_so_far in _scores_possible(
             next_valve,
             next_remaining_valves,
             rates,
             distances,
             next_min_left,
             next_starting_score,
+            visited_so_far,
         ):
-            next_scores_and_remaining.append((score + total_next_score, remaining))
+            next_scores_and_remaining_and_visited.append(
+                (score + total_next_score, remaining, visited_so_far)
+            )
 
-    return next_scores_and_remaining
+    return next_scores_and_remaining_and_visited
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
@@ -153,17 +168,24 @@ def part_one(stuff):
     }
     valve_distances = _get_distance_map(connections, valves_to_visit, start_valve)
 
-    scores_and_remaining = _scores_possible(
+    scores_and_remaining_and_visited = _scores_possible(
         start_valve,
         valves_to_visit,
         valve_rates,
         valve_distances,
         total_minutes,
         0,
+        list(),
     )
-    scores_and_remaining.sort(key=lambda x: x[0])
-    print(scores_and_remaining[-1])
-    return scores_and_remaining[-1][0]
+    scores_and_remaining_and_visited.sort(key=lambda x: x[0])
+
+    score, remaining, visited = scores_and_remaining_and_visited[-1]
+    print()
+    print(f"{score=}")
+    print(f"{remaining=}")
+    print(f"{visited=}")
+    print()
+    return scores_and_remaining_and_visited[-1][0]
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
@@ -192,12 +214,13 @@ def part_two(stuff):
         valve_distances,
         total_minutes,
         0,
+        list(),
     )
 
     total_scores = list()
 
     best_scores_for_remaining = defaultdict(int)
-    for elf_score, remaining_to_visit in elf_scores_and_remaining:
+    for elf_score, remaining_to_visit, _ in elf_scores_and_remaining:
         if elf_score > best_scores_for_remaining[frozenset(remaining_to_visit)]:
             best_scores_for_remaining[frozenset(remaining_to_visit)] = elf_score
 
@@ -209,6 +232,7 @@ def part_two(stuff):
             valve_distances,
             total_minutes,
             0,
+            list(),
         )
         elephant_scores_and_remaining.sort(key=lambda x: x[0])
         best_elephant_score = elephant_scores_and_remaining[-1][0]
@@ -252,6 +276,7 @@ def part_three(stuff):
                 valve_distances,
                 total_minutes,
                 0,
+                list(),
             )
             if not elephant_scores_and_remaining:
                 best_elephant_score = 0
@@ -266,6 +291,7 @@ def part_three(stuff):
                 valve_distances,
                 total_minutes,
                 0,
+                list(),
             )
             if not elf_scores_and_remaining:
                 best_elf_score = 0
