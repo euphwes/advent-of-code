@@ -1,6 +1,6 @@
 from collections import defaultdict
 from copy import copy
-from itertools import combinations, permutations
+from itertools import combinations
 from re import I
 
 from util.decorators import aoc_output_formatter
@@ -79,27 +79,64 @@ def _get_distance_map(connections, valves_to_visit, starting_valve):
     return distance_map
 
 
-def _score_valve_visit_order(start, perm, rates, distances, minutes_left):
+def _scores_possible(
+    curr_valve,
+    valves_to_visit,
+    rates,
+    distances,
+    minutes_left,
+    score,
+):
 
-    curr_valve = start
-    score = 0
+    if minutes_left <= 0:
+        return [0]
 
-    while minutes_left > 0:
-        next_valve = perm.pop(0)
+    if not valves_to_visit:
+        return [0]
 
+    valve_and_scores_and_remaining_valves_and_remaining_time = list()
+
+    for next_valve in valves_to_visit:
+        # print()
+        # print(f"check curr={curr_valve}, next={next_valve}")
         distance = distances[(curr_valve, next_valve)]
-        minutes_left -= distance + 1
+        this_next_valve_min_left = minutes_left - (distance + 1)
 
-        score += minutes_left * rates[next_valve]
+        if this_next_valve_min_left < 0:
+            continue
 
-        if minutes_left <= 0:
-            break
+        this_next_valve_score = this_next_valve_min_left * rates[next_valve]
+        next_remaining_valves = {v for v in valves_to_visit if v != next_valve}
+        # print(f"{next_remaining_valves=}")
 
-        curr_valve = next_valve
-        if not perm:
-            break
+        valve_and_scores_and_remaining_valves_and_remaining_time.append(
+            (
+                next_valve,
+                this_next_valve_score,
+                next_remaining_valves,
+                this_next_valve_min_left,
+            )
+        )
 
-    return score
+    next_scores = list()
+
+    for (
+        next_valve,
+        next_starting_score,
+        next_remaining_valves,
+        next_min_left,
+    ) in valve_and_scores_and_remaining_valves_and_remaining_time:
+        for total_next_score in _scores_possible(
+            next_valve,
+            next_remaining_valves,
+            rates,
+            distances,
+            next_min_left,
+            next_starting_score,
+        ):
+            next_scores.append(score + total_next_score)
+
+    return next_scores
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
@@ -116,18 +153,16 @@ def part_one(stuff):
     }
     valve_distances = _get_distance_map(connections, valves_to_visit, start_valve)
 
-    max_score = 0
-    for perm in permutations(valves_to_visit, len(valves_to_visit)):
-        walk_score = _score_valve_visit_order(
+    return max(
+        _scores_possible(
             start_valve,
-            list(perm),
+            valves_to_visit,
             valve_rates,
             valve_distances,
             total_minutes,
+            0,
         )
-        max_score = max([walk_score, max_score])
-
-    return max_score
+    )
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
