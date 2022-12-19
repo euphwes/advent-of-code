@@ -81,6 +81,25 @@ def _get_distance_map(connections, valves_to_visit, starting_valve):
         distance_map[(a, b)] = distance
         distance_map[(b, a)] = distance
 
+    # for pair, distance in distance_map.items():
+    #     a, b = pair
+    #     if b < a:
+    #         continue
+    #     print(f"{pair}: {distance}")
+
+    # print()
+    # print(f'AF: {distance_map[("AA", "FA")]}')
+    # print(f'FG: {distance_map[("FA", "GA")]}')
+    # print(f'GH: {distance_map[("GA", "HA")]}')
+    # print(f'HI: {distance_map[("HA", "IA")]}')
+    # print(f'IJ: {distance_map[("IA", "JA")]}')
+    # print(f'JK: {distance_map[("KA", "JA")]}')
+    # print(f'KL: {distance_map[("KA", "LA")]}')
+    # print(f'LM: {distance_map[("MA", "LA")]}')
+    # print(f'MN: {distance_map[("MA", "NA")]}')
+    # print(f'NO: {distance_map[("OA", "NA")]}')
+    # print(f'OP: {distance_map[("OA", "PA")]}')
+
     return distance_map
 
 
@@ -91,16 +110,13 @@ def _possible_paths(
     minutes_left,
     valves_visited,
 ):
+    if not valves_to_visit:
+        return [(set(), valves_visited)]
 
     if minutes_left <= 0:
-        thin_visited = [(v, left) for v, left in valves_visited if left != 0]
-        return [(valves_to_visit, thin_visited)]
+        return [(valves_to_visit, valves_visited)]
 
-    if not valves_to_visit:
-        thin_visited = [(v, left) for v, left in valves_visited if left != 0]
-        return [(set(), thin_visited)]
-
-    valve_and_scores_and_remaining_valves_and_remaining_time_and_visited = list()
+    valve_and_remaining_valves_and_remaining_time_and_visited = list()
 
     for next_valve in valves_to_visit:
         # print()
@@ -122,7 +138,7 @@ def _possible_paths(
         next_remaining_valves = {v for v in valves_to_visit if v != next_valve}
         # print(f"a={next_remaining_valves}")
 
-        valve_and_scores_and_remaining_valves_and_remaining_time_and_visited.append(
+        valve_and_remaining_valves_and_remaining_time_and_visited.append(
             (
                 next_valve,
                 next_remaining_valves,
@@ -131,6 +147,23 @@ def _possible_paths(
             )
         )
 
+    if not valve_and_remaining_valves_and_remaining_time_and_visited:
+        return [(set(), valves_visited)]
+
+    # print(valve_and_remaining_valves_and_remaining_time_and_visited)
+    # for (
+    #     next_valve,
+    #     next_remaining_valves,
+    #     min_left,
+    #     visited_so_far,
+    # ) in valve_and_remaining_valves_and_remaining_time_and_visited:
+    #     print()
+    #     print(f"Next={next_valve}")
+    #     print(f"Remaining={next_remaining_valves}")
+    #     print(f"Min left={min_left}")
+    #     print(f"Visted so far={visited_so_far}")
+    # return
+
     next_scores_and_remaining_and_visited = list()
 
     for (
@@ -138,7 +171,7 @@ def _possible_paths(
         next_remaining_valves,
         next_min_left,
         visited_so_far,
-    ) in valve_and_scores_and_remaining_valves_and_remaining_time_and_visited:
+    ) in valve_and_remaining_valves_and_remaining_time_and_visited:
         for remaining, visited_so_far in _possible_paths(
             next_valve,
             next_remaining_valves,
@@ -170,6 +203,7 @@ def part_one(stuff):
     valves_to_visit = {
         valve for valve, state in valve_states.items() if state == VALVE_CLOSED
     }
+    print(valves_to_visit)
     valve_distances = _get_distance_map(connections, valves_to_visit, start_valve)
 
     remaining_and_visited = _possible_paths(
@@ -345,8 +379,8 @@ def part_four(stuff):
 
     best_score = 0
 
-    # for elf_set_size in range(little_under_half, little_over_half + 1):
-    for elf_set_size in range(1, len(valves_to_visit)):
+    for elf_set_size in range(little_under_half, little_over_half + 1):
+        # for elf_set_size in range(1, len(valves_to_visit)):
         for elf_valves_combo in combinations(valves_to_visit, elf_set_size):
 
             elf_valves = set(elf_valves_combo)
@@ -395,10 +429,10 @@ def run(input_file):
     part_one(stuff)
 
     # stuff = get_input(input_file)
-    # part_two(stuff)
+    # part_two_v1(stuff)
 
     # stuff = get_input(input_file)
     # part_three(stuff)
 
-    # stuff = get_input(input_file)
-    # part_four(stuff)
+    stuff = get_input(input_file)
+    part_four(stuff)
