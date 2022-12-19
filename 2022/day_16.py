@@ -1,6 +1,7 @@
 from collections import defaultdict
 from copy import copy
 from itertools import combinations
+from typing import Any, List, Tuple
 
 from util.decorators import aoc_output_formatter
 from util.input import get_input
@@ -15,11 +16,16 @@ PART_TWO_DESCRIPTION = "Most pressure that elf + elephant duo can release in 26 
 PART_TWO_ANSWER = 2343
 
 
-def _parse_stuff(stuff):
+def _parse_valve_tunnel_map(raw_tunnel_info):
+    """Parses the problem input and returns a few things:
+    - a set of valves which we need to visit (closed with flow rate > 0)
+    - a map of valve its flow rate
+    - a map of valves to the set of valves it's directly connected to."""
+
     valve_flow_rate = defaultdict(int)
     valve_connections = defaultdict(set)
 
-    for line in stuff:
+    for line in raw_tunnel_info:
         valve_info, dest_info = line.split("; ")
         valve_num = valve_info[6:8]
         valve_rate = int(valve_info[valve_info.index("=") + 1 :])
@@ -36,10 +42,10 @@ def _parse_stuff(stuff):
 
 
 def _get_distance_between(a, b, connections):
+    """Performs a BFS between two nodes in the map and returns the distance between them."""
 
-    steps = 0
-    queue = [(a, 0)]
     visited = set()
+    queue: List[Tuple[Any, int]] = [(a, 0)]
 
     while queue:
         curr, steps = queue.pop(0)
@@ -50,12 +56,14 @@ def _get_distance_between(a, b, connections):
             if neighbor in visited:
                 continue
             visited.add(neighbor)
-            queue.append((neighbor, steps + 1))  # type: ignore
+            queue.append((neighbor, steps + 1))
 
     raise ValueError(f"Couldn't find path between {a} and {b},")
 
 
 def _get_distance_map(connections, valves_to_visit, starting_valve):
+    """Given a graph of valve connections, a starting valve, and a set of valves to be visited,
+    returns a map of the stepwise distance between each pair of relevant valves."""
 
     distance_map = dict()
 
@@ -72,20 +80,40 @@ def _get_distance_map(connections, valves_to_visit, starting_valve):
     return distance_map
 
 
+def _score_path(path_info, rates):
+    """Give a path (a list of tuples of valve and minutes_remaining when it was visited),
+    and a map of valve flow rates, "score" the path by calculating total pressure released."""
+
+    return sum(rates[valve] * min_remaining for valve, min_remaining in path_info)
+
+
 def _possible_paths(
     curr_valve,
     valves_to_visit,
     distances,
     minutes_left,
-    valves_visited,
+    valves_visited_with_min_left,
 ):
-    if not valves_to_visit:
-        return [valves_visited]
+    """Given a starting valve, time remaining, and valves remaining to visit, returns all
+    possible paths between these valves with the remaining time."""
 
+    # Base case, no remaining valves to visit.
+    if not valves_to_visit:
+        return [valves_visited_with_min_left]
+
+    # Base case, no time remaining.
     if minutes_left <= 0:
-        return [valves_visited]
+        return [valves_visited_with_min_left]
+
+    # Base case, there's some time left, but not enough to visit any remaining valves.
+    if not any(
+        distances[(curr_valve, next_valve)] <= minutes_left
+        for next_valve in valves_to_visit
+    ):
+        return [valves_visited_with_min_left]
 
     valve_and_remaining_valves_and_remaining_time_and_visited = list()
+    next_scores_and_remaining_and_visited = list()
 
     for next_valve in valves_to_visit:
         distance = distances[(curr_valve, next_valve)]
@@ -94,7 +122,9 @@ def _possible_paths(
 
         this_next_valve_min_left = minutes_left - distance
 
-        visited_so_far = copy(valves_visited) + [(next_valve, this_next_valve_min_left)]
+        visited_so_far = copy(valves_visited_with_min_left) + [
+            (next_valve, this_next_valve_min_left)
+        ]
 
         next_remaining_valves = {v for v in valves_to_visit if v != next_valve}
 
@@ -106,11 +136,6 @@ def _possible_paths(
                 visited_so_far,
             )
         )
-
-    if not valve_and_remaining_valves_and_remaining_time_and_visited:
-        return [valves_visited]
-
-    next_scores_and_remaining_and_visited = list()
 
     for (
         next_valve,
@@ -130,20 +155,13 @@ def _possible_paths(
     return next_scores_and_remaining_and_visited
 
 
-def _score_path(path_info, rates):
-    score = 0
-    for valve, min_remaining in path_info:
-        score += rates[valve] * min_remaining
-    return score
-
-
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(stuff):
 
     start_valve = "AA"
     total_minutes = 30
 
-    valves_to_visit, valve_rates, connections = _parse_stuff(stuff)
+    valves_to_visit, valve_rates, connections = _parse_valve_tunnel_map(stuff)
     valve_distances = _get_distance_map(connections, valves_to_visit, start_valve)
 
     paths = _possible_paths(
@@ -157,13 +175,13 @@ def part_one(stuff):
     return max(_score_path(path, valve_rates) for path in paths)
 
 
-@aoc_output_formatter(YEAR, DAY, 4, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
+@aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(stuff):
 
     start_valve = "AA"
     total_minutes = 26
 
-    valves_to_visit, valve_rates, connections = _parse_stuff(stuff)
+    valves_to_visit, valve_rates, connections = _parse_valve_tunnel_map(stuff)
     valve_distances = _get_distance_map(connections, valves_to_visit, start_valve)
 
     little_under_half = (len(valves_to_visit) // 2) - 1
