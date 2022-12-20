@@ -23,87 +23,142 @@ def _decrypt_uuids(stuff, og_stuff, uuid_to_og_ix):
     return [og_stuff[uuid_to_og_ix[uuid]] for uuid in stuff]
 
 
-def _run_switcheroos_v3(stuff):
-
-    size = len(stuff)
-
-    # raw values copy from stuff
-    og_stuff = copy(stuff)
-
-    og_ix_to_uuid = {i: _small_uuid() for i, _ in enumerate(stuff)}
-    uuid_to_og_ix = {v: k for k, v in og_ix_to_uuid.items()}
-
-    stuff = [og_ix_to_uuid[i] for i in range(len(stuff))]
-
-    # print(stuff)
-    for og_ix in range(size):
-        value = og_stuff[og_ix]
-
-        if value == 0:
-            continue
-
-        uuid_value = og_ix_to_uuid[og_ix]
-
-        i = stuff.index(uuid_value)
-        target = (i + value) % size
-
-        if target > i:
-            """
-            1 -3 -2 5 -6 0
-            move -3
-            should become
-            1 -2 5 -3 -6 0
-
-            i = 1
-            target = (1 - 3) % 6 = 4
-
-            1 [-3 -2 5] -6 0
-            [1] + (pop(0) and append) + [-6, 0]
-            [1] + [-2 5 -3] + [-6 0]
-            1 -2 5 -3 6 0
-            """
-            before = stuff[:i]
-            after = stuff[target + 1 :]
-            sublist = stuff[i : target + 1]
-            temp = sublist.pop(0)
-            sublist.append(temp)
-            stuff = before + sublist + after
-
-        else:
-            """
-            1 2 -2 5 -3 0
-            move -3
-            should become
-            1 -3 2 -2 5 0
-
-            i = 4
-            target = 4 -3 = 1
-
-            1 [2 -2 5 -3] 0
-            [1] + (pop from end and prepend)   + [0]
-            [1] + [-3 2 -2 5] + [0]
-            1 -3 2 -2 5 0
-            """
-            before = stuff[:target]
-            after = stuff[i + 1 :]
-            sublist = stuff[target : i + 1]
-            temp = sublist.pop(-1)
-            sublist = [temp] + sublist
-            stuff = before + sublist + after
-
-        # print(f"\nSwapping the og value {value} at {og_ix=}, {i=}, {target=}")
-
-        # print(stuff)
-        # print(_decrypt_uuids(stuff, og_stuff, uuid_to_og_ix))
-
-    # print(stuff)
-    return stuff, uuid_to_og_ix
-
-
 def _run_switcheroos_v2(stuff):
 
     size = len(stuff)
 
+    og_stuff = copy(stuff)
+
+    og_ix_to_uuid = {i: _small_uuid() for i, _ in enumerate(stuff)}
+    uuid_to_og_ix = {v: k for k, v in og_ix_to_uuid.items()}
+
+    stuff = [og_ix_to_uuid[i] for i in range(len(stuff))]
+
+    print("\nInitial")
+    print(_decrypt_uuids(stuff, og_stuff, uuid_to_og_ix))
+    for og_ix in range(size):
+        value = og_stuff[og_ix]
+        uuid_value = og_ix_to_uuid[og_ix]
+
+        i = stuff.index(uuid_value)
+        target = (i + value) % size
+
+        """
+        1, 2, 3, 4, 5
+        move 4
+        should give
+        1, 2, 3, 4, 5
+        
+        i = 3
+        target = (3 + 4) % 5 = 2
+        """
+        if value == 0:
+            pass
+
+        elif value > 0 and target == (i - 1):
+            pass
+
+        # """
+        # -1, -2, -3
+        # move -2
+        # should give
+        # -1, -2, -3
+
+        # i = 1
+        # target = (1 - 2) % 3 = 2
+        # """
+
+        elif value < 0 and target == (i + 1):
+            pass
+
+        # """
+        # 1 3 5 7 9
+        # move 5
+        # should give
+        # 1 3 7 5 9
+        # """
+
+        elif target == i:
+            if value > 0:
+                a, b = stuff[(i + 1) % size], stuff[i]
+                stuff[i], stuff[(i + 1) % size] = a, b
+            else:
+                a, b = stuff[(i - 1) % size], stuff[i]
+                stuff[i], stuff[(i - 1) % size] = a, b
+
+        ##### Example cases, positive value #####
+
+        # """
+        # 1, 2, 3, 4, 5, 6
+        # move 2
+        # should give
+        # 1, 3, 4, 2, 5, 6
+
+        # (finds value at ix + value, ends up to the right of it)
+        # """
+
+        # """
+        # 1, 2, 3, 4, 5, 6
+        # move 3
+        # should give
+        # 1, 2, 4, 5, 6, 3 or equivalently 3, 1, 2, 4, 5, 6
+
+        # (finds value at ix + value, ends up to the right of it)
+        # """
+
+        # """
+        # 1, 2, 3, 4, 5, 6
+        # move 1
+        # should give
+        # 2, 1, 3, 4, 5, 6
+
+        # (finds value at ix + value, ends up to the right of it)
+        # """
+
+        # """
+        # 5, 4, 3, 2, 1
+        # move 2
+        # should give
+        # 5, 2, 4, 3, 1
+
+        # (finds value at ix + value, ends up to the right of it)
+        # """
+
+        elif value > 0:
+            # print(f"{i=}")
+            # print(f"{target=}")
+            value_at_target = stuff[target]
+            temp = stuff.pop(i)
+            new_target = stuff.index(value_at_target)
+            stuff = stuff[: new_target + 1] + [temp] + stuff[new_target + 1 :]
+
+        ##### Example cases, negative value #####
+
+        # """
+        # 1, -2, 3, 4, 5, 6
+        # move -2
+        # should give
+        # 1, 3, 4, 5, -2, 6
+
+        # (finds value at ix - value, ends up to the left of it)
+        # """
+
+        elif value < 0:
+            value_at_target = stuff[target]
+            temp = stuff.pop(i)
+            new_target = stuff.index(value_at_target)
+            stuff = stuff[:new_target] + [temp] + stuff[new_target:]
+
+        print(f"\nSwapping the og value {value} at {og_ix=}, {i=}, {target=}")
+        print(_decrypt_uuids(stuff, og_stuff, uuid_to_og_ix))
+
+    return _decrypt_uuids(stuff, og_stuff, uuid_to_og_ix)
+
+
+def _run_switcheroos(stuff):
+
+    size = len(stuff)
+
     # raw values copy from stuff
     og_stuff = copy(stuff)
 
@@ -124,20 +179,45 @@ def _run_switcheroos_v2(stuff):
         i = stuff.index(uuid_value)
         target = (i + value) % size
 
-        # print(f"\nSwapping the og value {value} at {og_ix=}, {i=}, {target=}")
+        # if abs(target - i) == 1:
+        #     # CASE the things are adjacent
+        #     # swippity swap
+        #     stuff[target], stuff[i] = stuff[i], stuff[target]
 
-        if target == 0:
-            temp = stuff.pop(i)
-            stuff = [temp] + stuff
-        elif target == size - 1:
-            temp = stuff.pop(i)
-            stuff.append(temp)
-        else:
+        # if target == i:
+        #     # Went all the way around the circle
+        #     pass
 
-            if target > i:
-                # print("\ndoing greater than than")
-                # print("before")
-                # print(stuff)
+        if value > 0 and target == (i - 1):
+            """
+            1, 2, 3, 4, 5
+            move 4
+            gives
+            1, 2, 3, 4, 5
+            """
+            pass
+
+        elif value < 0 and target == (i + 1):
+            """
+            -1, -2, -3
+            move -2
+            gives
+            -1, -2, -3
+            """
+            pass
+
+        elif target > i:
+            # CASE target ix is higher than starting ix
+
+            if True:
+                """
+                1 2 3 4 5 6
+                move 2
+                should give
+                """
+
+            if value < 0:
+                # SUB-CASE value is moving left and wraps around
                 """
                 1 -3 -2 5 -6 0
                 move -3
@@ -146,30 +226,23 @@ def _run_switcheroos_v2(stuff):
 
                 i = 1
                 target = (1 - 3) % 6 = 4
-                target -=1 (because we pop the value) --> target = 3
 
-                1 -2 5 -6 0   (popped value)
-
-                [1, -2, 5] + [-3] + [6, 0]
-
+                1 [-3 -2 5] -6 0
+                [1] + (pop(0) and append) + [-6, 0]
+                [1] + [-2 5 -3] + [-6 0]
+                1 -2 5 -3 6 0
                 """
+                before = stuff[:i]
+                after = stuff[target:]
 
-                temp = stuff.pop(i)
-                target -= 1
-                if value < 0:
-                    target -= 1
-                # if value > 0:
-                #     target += 1
-                stuff = (
-                    stuff[: (target + 1) % size] + [temp] + stuff[(target + 1) % size :]
-                )
-                # print("after")
-                # print(stuff)
-            else:
-                # print()
-                # print("\ndoing smaller than than")
-                # print("before")
-                # print(stuff)
+                middle = stuff[i:target]
+                temp = middle.pop(0)
+                middle.append(temp)
+
+                stuff = before + middle + after
+
+            elif value > 0:
+                # SUB-CASE value is moving right
                 """
                 1 2 -2 5 -6 0
                 move 2
@@ -179,74 +252,92 @@ def _run_switcheroos_v2(stuff):
                 i = 1
                 target = (1 + 2) % 6 = 3
 
-                1 -2 5 -6 0  (popped value)
-                don't need to change target
-
-                [1 -2 5] + [2] + [-6 0]
-
+                [1] [2, -2, 5] [-6 0]
+                * INCLUDE TARGET *
+                [1] + (pop(0) and append) + [-6 0]
+                [1] + [-2, 5, 2] + [-6 0]
+                1, -2, 5, 2, -6, 0
                 """
-                temp = stuff.pop(i)
-                if value > 0:
-                    target += 1
-                # if value < 0:
-                #     target -= 1
-                stuff = stuff[: (target) % size] + [temp] + stuff[(target) % size :]
-                # print("after")
-                # print(stuff)
+
+                before = stuff[:i]
+                after = stuff[target + 1 :]
+
+                middle = stuff[i : target + 1]
+                temp = middle.pop(0)
+                middle.append(temp)
+
+                stuff = before + middle + after
+
+        else:
+            # CASE target ix is lower than starting ix
+
+            if value < 0:
+                # SUB-CASE value is moving left
+                """
+                1 -3 -2 5 -6 0
+                move -2
+                should become
+                -2 1 -3 5 -6 0
+
+                i = 2
+                target = (2 - 2) % 6 = 0
+                [] [1 -3 -2] [5 -6 0]
+                [] (pop last and prepend) [5 -6 0]
+                [] + [-2 1 -3] [5 -6 0]
+                -2 1 -3 5 -6 0
+
+                RANGE IS FROM TARGET TO I, include I
+                """
+
+                before = stuff[:target]
+                after = stuff[i + 1 :]
+
+                middle = stuff[target : i + 1]
+                temp = middle.pop(-1)
+                middle = [temp] + middle
+
+                stuff = before + middle + after
+
+            elif value > 0:
+                # SUB-CASE value is moving right and wraps around
+                """
+                1 2 -2 4 -6 0
+                move 4
+                should become
+                1 2 4 -2 -6 0
+
+                i = 3
+                target = (3 + 4) % 6 = 1
+
+                [1 2] [-2 4] [-6 0]
+
+                RANGE IS FROM TARGET+1 TO I, including I
+                """
+
+                before = stuff[: target + 1]
+                after = stuff[i + 1 :]
+
+                middle = stuff[target + 1 : i + 1]
+                temp = middle.pop(-1)
+                middle = [temp] + middle
+
+                stuff = before + middle + after
+
+        # print(f"\nSwapping the og value {value} at {og_ix=}, {i=}, {target=}")
+
         # print(stuff)
         # print(_decrypt_uuids(stuff, og_stuff, uuid_to_og_ix))
 
-    # print(stuff)
-    return stuff, uuid_to_og_ix
-
-
-def _run_switcheroos(stuff):
-    size = len(stuff)
-    og_stuff = list(copy(stuff))
-
-    og_ix_to_uuid = {i: _small_uuid() for i, _ in enumerate(og_stuff)}
-    uuid_to_og_ix = {v: k for k, v in og_ix_to_uuid.items()}
-
-    stuff = [og_ix_to_uuid[i] for i in range(len(stuff))]
-
-    for og_value_ix in range(len(stuff)):
-
-        og_value = og_stuff[og_value_ix]
-        if og_value == 0:
-            continue
-
-        uuid_value = og_ix_to_uuid[og_value_ix]
-
-        is_moving_left = og_value < 0
-
-        i = stuff.index(uuid_value)
-        for n in range(abs(og_value)):
-            if is_moving_left:
-                # i = stuff.index(uuid_value)
-                a, b = stuff[i % size], stuff[(i - 1) % size]
-                stuff[i % size], stuff[(i - 1) % size] = b, a
-                i = (i - 1) % size
-
-            else:
-                # i = stuff.index(uuid_value)
-                a, b = stuff[i % size], stuff[(i + 1) % size]
-                stuff[i % size], stuff[(i + 1) % size] = b, a
-                i = (i + 1) % size
-
-    return stuff, uuid_to_og_ix
+    return _decrypt_uuids(stuff, og_stuff, uuid_to_og_ix)
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(stuff):
 
-    size = len(stuff)
-    og_stuff = copy(stuff)
+    stuff = _run_switcheroos_v2(stuff)
 
-    stuff, uuid_to_og_ix = _run_switcheroos_v3(stuff)
-
-    stuff = [og_stuff[uuid_to_og_ix[uuid]] for uuid in stuff]
-    # print(stuff)
     i = stuff.index(0)
+    size = len(stuff)
 
     return (
         stuff[(i + 1000) % size] + stuff[(i + 2000) % size] + stuff[(i + 3000) % size]
@@ -255,22 +346,24 @@ def part_one(stuff):
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(stuff):
+
+    print()
+    print(f"Initial")
+    stuff = [n * 811589153 for n in stuff]
+    print(stuff)
+
+    for n in range(10):
+        stuff = _run_switcheroos_v2(stuff)
+        print()
+        print(f"Round {n+1}")
+        print(stuff)
+
+    print()
+    i = stuff.index(0)
     size = len(stuff)
-    og_stuff = copy(stuff)
 
-    decrypted_stuff = [n * 811589153 for n in stuff]
-
-    for _ in range(10):
-        decrypted_stuff, uuid_to_og_ix = _run_switcheroos(decrypted_stuff)
-
-    decrypted_stuff = [og_stuff[uuid_to_og_ix[uuid]] for uuid in decrypted_stuff]
-    i = decrypted_stuff.index(0)
-
-    # not 5377589727778
     return (
-        decrypted_stuff[(i + 1000) % size]
-        + decrypted_stuff[(i + 2000) % size]
-        + decrypted_stuff[(i + 3000) % size]
+        stuff[(i + 1000) % size] + stuff[(i + 2000) % size] + stuff[(i + 3000) % size]
     )
 
 
