@@ -112,56 +112,44 @@ def _possible_paths(
     ):
         return [valves_visited_with_min_left]
 
-    valve_and_remaining_valves_and_remaining_time_and_visited = list()
+    # For each choice available for next valve to visit, aggregate all possible paths for that
+    # choice and then return them all.
     next_scores_and_remaining_and_visited = list()
 
     for next_valve in valves_to_visit:
+
         distance = distances[(curr_valve, next_valve)]
         if distance > minutes_left:
+            # Not enough time to visit this valve.
             continue
 
-        this_next_valve_min_left = minutes_left - distance
-
+        next_min_left = minutes_left - distance
         visited_so_far = copy(valves_visited_with_min_left) + [
-            (next_valve, this_next_valve_min_left)
+            (next_valve, next_min_left)
         ]
 
         next_remaining_valves = {v for v in valves_to_visit if v != next_valve}
 
-        valve_and_remaining_valves_and_remaining_time_and_visited.append(
-            (
+        next_scores_and_remaining_and_visited.extend(
+            _possible_paths(
                 next_valve,
                 next_remaining_valves,
-                this_next_valve_min_left,
+                distances,
+                next_min_left,
                 visited_so_far,
             )
         )
-
-    for (
-        next_valve,
-        next_remaining_valves,
-        next_min_left,
-        visited_so_far,
-    ) in valve_and_remaining_valves_and_remaining_time_and_visited:
-        for visited_so_far in _possible_paths(
-            next_valve,
-            next_remaining_valves,
-            distances,
-            next_min_left,
-            visited_so_far,
-        ):
-            next_scores_and_remaining_and_visited.append(visited_so_far)
 
     return next_scores_and_remaining_and_visited
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
-def part_one(stuff):
+def part_one(raw_valve_info):
 
     start_valve = "AA"
     total_minutes = 30
 
-    valves_to_visit, valve_rates, connections = _parse_valve_tunnel_map(stuff)
+    valves_to_visit, valve_rates, connections = _parse_valve_tunnel_map(raw_valve_info)
     valve_distances = _get_distance_map(connections, valves_to_visit, start_valve)
 
     paths = _possible_paths(
@@ -176,14 +164,20 @@ def part_one(stuff):
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
-def part_two(stuff):
+def part_two(raw_valve_info):
+
+    # Divvy the sets of valves between elf and elephant, and find the best possible arrangement
+    # of valves between the two to yield the most pressure release.
 
     start_valve = "AA"
     total_minutes = 26
 
-    valves_to_visit, valve_rates, connections = _parse_valve_tunnel_map(stuff)
+    valves_to_visit, valve_rates, connections = _parse_valve_tunnel_map(raw_valve_info)
     valve_distances = _get_distance_map(connections, valves_to_visit, start_valve)
 
+    # Something of a hack and it's not exhaustive, but let's ~roughly~ split the valves in half
+    # between elf and elephant. Intuitively, having one take most of the valves, and the other
+    # only handle a few, isn't going to yield the best results.
     little_under_half = (len(valves_to_visit) // 2) - 1
     little_over_half = (len(valves_to_visit) // 2) + 2
 
@@ -233,8 +227,8 @@ def part_two(stuff):
 
 def run(input_file):
 
-    stuff = get_input(input_file)
-    part_one(stuff)
+    raw_valve_info = get_input(input_file)
+    part_one(raw_valve_info)
 
-    stuff = get_input(input_file)
-    part_two(stuff)
+    raw_valve_info = get_input(input_file)
+    part_two(raw_valve_info)
