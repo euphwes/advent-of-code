@@ -70,15 +70,21 @@ def part_one(stuff):
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(stuff):
 
+    print(len(stuff))
     stuff = [n * 811589153 for n in stuff]
+    print(len(stuff))
 
     size = len(stuff)
     og_stuff = list(copy(stuff))
+    print(len(og_stuff))
 
     og_ix_to_uuid = {i: _small_uuid() for i, _ in enumerate(og_stuff)}
     uuid_to_og_ix = {v: k for k, v in og_ix_to_uuid.items()}
+    print(len(og_ix_to_uuid.items()))
+    print(len(uuid_to_og_ix.items()))
 
     stuff = [og_ix_to_uuid[i] for i in range(len(stuff))]
+    print(len(stuff))
 
     for _ in range(10):
         for og_value_ix in range(len(stuff)):
