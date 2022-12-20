@@ -1,5 +1,6 @@
 from copy import copy
 from os import remove
+from uuid import uuid4
 
 from util.decorators import aoc_output_formatter
 from util.input import get_input
@@ -14,137 +15,52 @@ PART_TWO_DESCRIPTION = ""
 PART_TWO_ANSWER = None
 
 
-@aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
-def part_one_archive(stuff):
-    original_order = copy(stuff)
-    size = len(stuff)
-
-    print(stuff)
-    for og_value in original_order:
-        if og_value == 0:
-            print("\nnot moving 0")
-            print(stuff)
-            continue
-
-        i = stuff.index(og_value)
-        target = (i + og_value) % size
-        value_at_target = stuff[target % size]
-        print()
-        print(f"moving {og_value} to target ix {target} where {value_at_target} is")
-
-        stuff.pop(i)
-        new_target = stuff.index(value_at_target)
-        # print(f"new target is {new_target}")
-
-        if new_target == 0:
-            stuff = [og_value] + stuff
-        elif new_target == size - 2:
-            stuff = stuff + [og_value]
-        else:
-            before, after = stuff[:new_target], stuff[new_target:]
-            # print(f"before piece: {before}")
-            # print(f"after piece: {after}")
-            stuff = before + [og_value] + after
-
-        """
-        1, -3, 2, 3, -2, 0, 4
-
-        -3 moves between -2 and 0:
-        
-        1, 2, 3, -2, -3, 0, 4
-
-
-        i = 1
-        target = 1 - 3 = -2   (which is value 0, should go there)
-        -2 + 7 = 5
-
-        pop i = 1 (removing -3)
-        1, 2, 3, -2, 0, 4
-
-        new_target = 4
-        [1, 2, 3, -2] + [-3] + [0, 4]
-        """
-
-        # if og_value > 0:
-        #     for _ in range(og_value):
-        #         stuff[i % size], stuff[(i + 1) % size] = (
-        #             stuff[(i + 1) % size],
-        #             stuff[i % size],
-        #         )
-        #         i += 1
-        # else:
-        #     for _ in range(abs(og_value)):
-        #         stuff[i % size], stuff[(i - 1) % size] = (
-        #             stuff[(i - 1) % size],
-        #             stuff[i % size],
-        #         )
-        #         i -= 1
-
-        print()
-        print(stuff)
+def _small_uuid():
+    return str(uuid4())[:8]
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(stuff):
 
-    # print()
-    # print(stuff)
-
     size = len(stuff)
+    og_stuff = list(copy(stuff))
 
-    for og_value in list(copy(stuff)):
+    og_ix_to_uuid = {i: _small_uuid() for i, _ in enumerate(og_stuff)}
+    uuid_to_og_ix = {v: k for k, v in og_ix_to_uuid.items()}
 
+    stuff = [og_ix_to_uuid[i] for i in range(len(stuff))]
+
+    for og_value_ix in range(len(stuff)):
+
+        og_value = og_stuff[og_value_ix]
         if og_value == 0:
-            # print("\nnot moving 0\n")
-            # print(stuff)
             continue
 
-        i = stuff.index(og_value)
-        target = (i + og_value + size) % size
-        value_at_target = stuff[target]
-        # print()
-        # print(f"found {og_value} at {i=}, moving to {target=} where {value_at_target=}")
+        uuid_value = og_ix_to_uuid[og_value_ix]
 
-        if target > i:
-            # swap to the right
-            num_swaps = abs(i - target)
-            if og_value < 0:
-                num_swaps -= 1
-            for _ in range(num_swaps):
-                a, b = stuff[i % size], stuff[(i + 1) % size]
-                stuff[i % size], stuff[(i + 1) % size] = b, a
+        is_moving_left = og_value < 0
+        is_moving_right = not is_moving_left
 
-                i += 1
-                i = i % size
-
-            test = stuff.index(og_value)
-            if test == size - 1:
-                stuff.pop(-1)
-                stuff = [og_value] + stuff
-
-        else:
-            # swap to the left
-            num_swaps = abs(i - target)
-            if og_value > 0:
-                num_swaps -= 1
-            for _ in range(num_swaps):
+        i = stuff.index(uuid_value)
+        for n in range(abs(og_value)):
+            if is_moving_left:
                 a, b = stuff[i % size], stuff[(i - 1) % size]
                 stuff[i % size], stuff[(i - 1) % size] = b, a
+                i = (i - 1) % size
 
-                i -= 1
-                i = i % size
+            else:
+                a, b = stuff[i % size], stuff[(i + 1) % size]
+                stuff[i % size], stuff[(i + 1) % size] = b, a
+                i = (i + 1) % size
 
-            test = stuff.index(og_value)
-            if test == 0:
-                stuff.pop(0)
-                stuff.append(og_value)
-
-        # print()
+        # print(f"\nmoved {og_value}\n")
         # print(stuff)
 
+    stuff = [og_stuff[uuid_to_og_ix[uuid]] for uuid in stuff]
     i = stuff.index(0)
 
-    # not 13972, 15077
+    # ? 14165 wrong swaps
+    # not 13972, 15077, -5345, -11007, 23161, 473
     # print(stuff)
     return (
         stuff[(i + 1000) % size] + stuff[(i + 2000) % size] + stuff[(i + 3000) % size]
@@ -153,7 +69,50 @@ def part_one(stuff):
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(stuff):
-    pass
+
+    stuff = [n * 811589153 for n in stuff]
+
+    size = len(stuff)
+    og_stuff = list(copy(stuff))
+
+    og_ix_to_uuid = {i: _small_uuid() for i, _ in enumerate(og_stuff)}
+    uuid_to_og_ix = {v: k for k, v in og_ix_to_uuid.items()}
+
+    stuff = [og_ix_to_uuid[i] for i in range(len(stuff))]
+
+    for _ in range(10):
+        for og_value_ix in range(len(stuff)):
+
+            og_value = og_stuff[og_value_ix]
+            if og_value == 0:
+                continue
+
+            uuid_value = og_ix_to_uuid[og_value_ix]
+
+            is_moving_left = og_value < 0
+            is_moving_right = not is_moving_left
+
+            i = stuff.index(uuid_value)
+            for n in range(abs(og_value)):
+                if is_moving_left:
+                    a, b = stuff[i % size], stuff[(i - 1) % size]
+                    stuff[i % size], stuff[(i - 1) % size] = b, a
+                    i = (i - 1) % size
+
+                else:
+                    a, b = stuff[i % size], stuff[(i + 1) % size]
+                    stuff[i % size], stuff[(i + 1) % size] = b, a
+                    i = (i + 1) % size
+
+    stuff = [og_stuff[uuid_to_og_ix[uuid]] for uuid in stuff]
+    i = stuff.index(0)
+
+    # ? 14165 wrong swaps
+    # not 13972, 15077, -5345, -11007, 23161, 473
+    # print(stuff)
+    return (
+        stuff[(i + 1000) % size] + stuff[(i + 2000) % size] + stuff[(i + 3000) % size]
+    )
 
 
 # ----------------------------------------------------------------------------------------------
@@ -164,5 +123,5 @@ def run(input_file):
     stuff = [int(n) for n in get_input(input_file)]
     part_one(stuff)
 
-    stuff = [int(n) for n in get_input(input_file)]
-    part_two(stuff)
+    # stuff = [int(n) for n in get_input(input_file)]
+    # part_two(stuff)
