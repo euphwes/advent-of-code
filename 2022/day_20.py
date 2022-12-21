@@ -18,7 +18,27 @@ def _mini_uuid():
     return str(uuid4())[:8]
 
 
+def _get_grove_coords_sum(numbers):
+    """Returns the sum of the coordinates of the grove; the 1000th, 2000th, and 3000th numbers
+    which follow the value 0 in the list of numbers."""
+
+    i = numbers.index(0)
+
+    return (
+        numbers[(i + 1000) % len(numbers)]
+        + numbers[(i + 2000) % len(numbers)]
+        + numbers[(i + 3000) % len(numbers)]
+    )
+
+
 def _translate_numbers(numbers):
+    """The mixing process requires us to move numbers around in a list, but when that list
+    contains duplicate numbers, we need to be able to uniquely identify them. This process
+    assigns a "mini uuid" to each of the distinct numbers in the list. Then it returns the
+    "translated" list of mini uuids, an unaltered copy of the original numbers so we can figure
+    out which uuid corresponds to which unique number, and a mapping of index (of the original
+    unaltered list) to the new uuid, and the reverse mapping for conversion back later."""
+
     original_ordered_numbers = copy(numbers)
 
     ix_to_uuid = {i: _mini_uuid() for i, _ in enumerate(numbers)}
@@ -83,26 +103,14 @@ def _run_switcheroo(numbers, iterations=1, is_part_two=False):
 def part_one(numbers):
 
     numbers = _run_switcheroo(numbers, iterations=1, is_part_two=False)
-    i = numbers.index(0)
-
-    return (
-        numbers[(i + 1000) % len(numbers)]
-        + numbers[(i + 2000) % len(numbers)]
-        + numbers[(i + 3000) % len(numbers)]
-    )
+    return _get_grove_coords_sum(numbers)
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(numbers):
 
     numbers = _run_switcheroo(numbers, iterations=10, is_part_two=True)
-    i = numbers.index(0)
-
-    return (
-        numbers[(i + 1000) % len(numbers)]
-        + numbers[(i + 2000) % len(numbers)]
-        + numbers[(i + 3000) % len(numbers)]
-    )
+    return _get_grove_coords_sum(numbers)
 
 
 # ----------------------------------------------------------------------------------------------
@@ -110,8 +118,8 @@ def part_two(numbers):
 
 def run(input_file):
 
-    stuff = [int(n) for n in get_input(input_file)]
-    part_one(stuff)
+    numbers = [int(n) for n in get_input(input_file)]
+    part_one(numbers)
 
-    stuff = [int(n) for n in get_input(input_file)]
-    part_two(stuff)
+    numbers = [int(n) for n in get_input(input_file)]
+    part_two(numbers)
