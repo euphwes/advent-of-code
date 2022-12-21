@@ -103,6 +103,26 @@ class RockChamber:
         # populate bottom resting_row with empty row to make later stuff easier
         self.resting_rows[0] = _empty_row()
 
+    def __str__(self):
+        printed_rows = list()
+        printed_rows.append("+-------+")
+
+        max_height = max(
+            (
+                max(self.resting_rows.keys()),
+                max(self.falling_rows.keys()) if self.falling_rows else 0,
+            )
+        )
+
+        for i in range(max_height + 1):
+            resting = self.resting_rows[i]
+            falling = self.falling_rows[i]
+            combined = self._combine(resting, falling)
+
+            printed_rows.append(f"|{''.join(combined)}|")
+        printed_rows.append("\n")
+        return "\n".join(reversed(printed_rows))
+
     def _combine(self, resting, falling):
         combined = list()
         for r, f in zip(resting, falling):
@@ -118,10 +138,18 @@ class RockChamber:
                 raise ValueError("one of the 4 above cases should have matched")
         return combined
 
+    def _apply_gravity(self):
+        """Attempt to make the falling rock fall down a unit."""
+
+        min_ix = min(self.falling_rows.keys()) if self.falling_rows else 0
+        if min_ix == 0:
+            raise CannotOccupySameSpaceException()
+
+        for i, falling_row in self.falling_rows.items():
+            self._combine(self.resting_rows[i - 1], falling_row)
+
     def _apply_gust(self, gust):
         """Apply a gust of wind to the rock and maybe move it left or right."""
-
-        print(f"Gust {gust}")
 
         # First just see if the rock would hit the wall of the chanber.
         if gust == GUST_RIGHT:
@@ -169,31 +197,19 @@ class RockChamber:
         for i, falling_row in enumerate(reversed(rock_pattern)):
             self.falling_rows[max_height + 3 + i] = falling_row
 
-        print(self)
-
-        for _ in range(10):
-            self._apply_gust(next(wind_gusts))
+        try:
             print(self)
-
-    def __str__(self):
-        printed_rows = list()
-        printed_rows.append("+-------+")
-
-        max_height = max(
-            (
-                max(self.resting_rows.keys()),
-                max(self.falling_rows.keys()) if self.falling_rows else 0,
-            )
-        )
-
-        for i in range(max_height + 1):
-            resting = self.resting_rows[i]
-            falling = self.falling_rows[i]
-            combined = self._combine(resting, falling)
-
-            printed_rows.append(f"|{''.join(combined)}|")
-        printed_rows.append("\n")
-        return "\n".join(reversed(printed_rows))
+            while True:
+                self._apply_gust(next(wind_gusts))
+                self._apply_gravity()
+                print(self)
+        except CannotOccupySameSpaceException:
+            for i in self.falling_rows.keys():
+                self.resting_rows[i] = self._combine(
+                    self.resting_rows[i],
+                    self.falling_rows[i],
+                )
+            self.falling_rows = defaultdict(_empty_row)
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
@@ -205,8 +221,7 @@ def part_one(wind_gusts):
     endless_wind = wind_generator()
 
     chamber = RockChamber()
-    print(chamber)
-    chamber.simulate_falling_rock(L_BLOCK, endless_wind)
+    chamber.simulate_falling_rock(HORIZONTAL_BLOCK, endless_wind)
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
