@@ -141,15 +141,29 @@ class RockChamber:
     def _apply_gravity(self):
         """Attempt to make the falling rock fall down a unit."""
 
-        min_ix = min(self.falling_rows.keys()) if self.falling_rows else 0
-        if min_ix == 0:
+        print("Falling")
+
+        min_occupied_ix = 9999999999999999
+        for i, falling_row in reversed(self.falling_rows.items()):
+            if all(c == AIR_SPACE for c in falling_row):
+                continue
+            min_occupied_ix = i
+
+        if min_occupied_ix == 0:
             raise CannotOccupySameSpaceException()
 
         for i, falling_row in self.falling_rows.items():
             self._combine(self.resting_rows[i - 1], falling_row)
 
+        new_falling_rows = defaultdict(_empty_row)
+        for i, falling_row in self.falling_rows.items():
+            new_falling_rows[i - 1] = falling_row
+        self.falling_rows = new_falling_rows
+
     def _apply_gust(self, gust):
         """Apply a gust of wind to the rock and maybe move it left or right."""
+
+        print(f"Gust {gust}")
 
         # First just see if the rock would hit the wall of the chanber.
         if gust == GUST_RIGHT:
@@ -210,6 +224,7 @@ class RockChamber:
                     self.falling_rows[i],
                 )
             self.falling_rows = defaultdict(_empty_row)
+            print(self)
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
@@ -222,6 +237,8 @@ def part_one(wind_gusts):
 
     chamber = RockChamber()
     chamber.simulate_falling_rock(HORIZONTAL_BLOCK, endless_wind)
+    chamber.simulate_falling_rock(PLUS_BLOCK, endless_wind)
+    chamber.simulate_falling_rock(L_BLOCK, endless_wind)
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
