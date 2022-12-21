@@ -1,5 +1,4 @@
 from copy import copy
-from os import remove
 from uuid import uuid4
 
 from util.decorators import aoc_output_formatter
@@ -19,358 +18,282 @@ def _small_uuid():
     return str(uuid4())[:8]
 
 
-def _decrypt_uuids(stuff, og_stuff, uuid_to_og_ix):
-    return [og_stuff[uuid_to_og_ix[uuid]] for uuid in stuff]
+def _translate_numbers(numbers):
+    original_ordered_numbers = copy(numbers)
+
+    ix_to_uuid = {i: _small_uuid() for i, _ in enumerate(numbers)}
+    uuid_to_ix = {v: k for k, v in ix_to_uuid.items()}
+
+    return (
+        [ix_to_uuid[i] for i in range(len(numbers))],
+        ix_to_uuid,
+        uuid_to_ix,
+        original_ordered_numbers,
+    )
 
 
-def _run_switcheroos_v2(stuff):
-
-    size = len(stuff)
-
-    og_stuff = copy(stuff)
-
-    og_ix_to_uuid = {i: _small_uuid() for i, _ in enumerate(stuff)}
-    uuid_to_og_ix = {v: k for k, v in og_ix_to_uuid.items()}
-
-    stuff = [og_ix_to_uuid[i] for i in range(len(stuff))]
-
-    print("\nInitial")
-    print(_decrypt_uuids(stuff, og_stuff, uuid_to_og_ix))
-    for og_ix in range(size):
-        value = og_stuff[og_ix]
-        uuid_value = og_ix_to_uuid[og_ix]
-
-        i = stuff.index(uuid_value)
-        target = (i + value) % size
-
-        """
-        1, 2, 3, 4, 5
-        move 4
-        should give
-        1, 2, 3, 4, 5
-        
-        i = 3
-        target = (3 + 4) % 5 = 2
-        """
-        if value == 0:
-            pass
-
-        elif value > 0 and target == (i - 1):
-            pass
-
-        # """
-        # -1, -2, -3
-        # move -2
-        # should give
-        # -1, -2, -3
-
-        # i = 1
-        # target = (1 - 2) % 3 = 2
-        # """
-
-        elif value < 0 and target == (i + 1):
-            pass
-
-        # """
-        # 1 3 5 7 9
-        # move 5
-        # should give
-        # 1 3 7 5 9
-        # """
-
-        elif target == i:
-            if value > 0:
-                a, b = stuff[(i + 1) % size], stuff[i]
-                stuff[i], stuff[(i + 1) % size] = a, b
-            else:
-                a, b = stuff[(i - 1) % size], stuff[i]
-                stuff[i], stuff[(i - 1) % size] = a, b
-
-        ##### Example cases, positive value #####
-
-        # """
-        # 1, 2, 3, 4, 5, 6
-        # move 2
-        # should give
-        # 1, 3, 4, 2, 5, 6
-
-        # (finds value at ix + value, ends up to the right of it)
-        # """
-
-        # """
-        # 1, 2, 3, 4, 5, 6
-        # move 3
-        # should give
-        # 1, 2, 4, 5, 6, 3 or equivalently 3, 1, 2, 4, 5, 6
-
-        # (finds value at ix + value, ends up to the right of it)
-        # """
-
-        # """
-        # 1, 2, 3, 4, 5, 6
-        # move 1
-        # should give
-        # 2, 1, 3, 4, 5, 6
-
-        # (finds value at ix + value, ends up to the right of it)
-        # """
-
-        # """
-        # 5, 4, 3, 2, 1
-        # move 2
-        # should give
-        # 5, 2, 4, 3, 1
-
-        # (finds value at ix + value, ends up to the right of it)
-        # """
-
-        elif value > 0:
-            # print(f"{i=}")
-            # print(f"{target=}")
-            value_at_target = stuff[target]
-            temp = stuff.pop(i)
-            new_target = stuff.index(value_at_target)
-            stuff = stuff[: new_target + 1] + [temp] + stuff[new_target + 1 :]
-
-        ##### Example cases, negative value #####
-
-        # """
-        # 1, -2, 3, 4, 5, 6
-        # move -2
-        # should give
-        # 1, 3, 4, 5, -2, 6
-
-        # (finds value at ix - value, ends up to the left of it)
-        # """
-
-        elif value < 0:
-            value_at_target = stuff[target]
-            temp = stuff.pop(i)
-            new_target = stuff.index(value_at_target)
-            stuff = stuff[:new_target] + [temp] + stuff[new_target:]
-
-        print(f"\nSwapping the og value {value} at {og_ix=}, {i=}, {target=}")
-        print(_decrypt_uuids(stuff, og_stuff, uuid_to_og_ix))
-
-    return _decrypt_uuids(stuff, og_stuff, uuid_to_og_ix)
+def _translate_uuids(numbers, original_ordered_values, uuid_to_original_ix):
+    return [original_ordered_values[uuid_to_original_ix[uuid]] for uuid in numbers]
 
 
-def _run_switcheroos(stuff):
+def _move_element_at_ix_by_value(elements, ix, value):
+    if value == 0:
+        return elements
 
-    size = len(stuff)
+    size = len(elements)
+    target = (ix + value) % size
 
-    # raw values copy from stuff
-    og_stuff = copy(stuff)
-
-    og_ix_to_uuid = {i: _small_uuid() for i, _ in enumerate(stuff)}
-    uuid_to_og_ix = {v: k for k, v in og_ix_to_uuid.items()}
-
-    stuff = [og_ix_to_uuid[i] for i in range(len(stuff))]
-
-    # print(stuff)
-    for og_ix in range(size):
-        value = og_stuff[og_ix]
-
-        if value == 0:
-            continue
-
-        uuid_value = og_ix_to_uuid[og_ix]
-
-        i = stuff.index(uuid_value)
-        target = (i + value) % size
-
-        # if abs(target - i) == 1:
-        #     # CASE the things are adjacent
-        #     # swippity swap
-        #     stuff[target], stuff[i] = stuff[i], stuff[target]
-
-        # if target == i:
-        #     # Went all the way around the circle
-        #     pass
-
-        if value > 0 and target == (i - 1):
-            """
-            1, 2, 3, 4, 5
-            move 4
-            gives
-            1, 2, 3, 4, 5
-            """
-            pass
-
-        elif value < 0 and target == (i + 1):
-            """
-            -1, -2, -3
-            move -2
-            gives
-            -1, -2, -3
-            """
-            pass
-
-        elif target > i:
-            # CASE target ix is higher than starting ix
-
-            if True:
-                """
-                1 2 3 4 5 6
-                move 2
-                should give
-                """
-
-            if value < 0:
-                # SUB-CASE value is moving left and wraps around
-                """
-                1 -3 -2 5 -6 0
-                move -3
-                should become
-                1 -2 5 -3 -6 0
-
-                i = 1
-                target = (1 - 3) % 6 = 4
-
-                1 [-3 -2 5] -6 0
-                [1] + (pop(0) and append) + [-6, 0]
-                [1] + [-2 5 -3] + [-6 0]
-                1 -2 5 -3 6 0
-                """
-                before = stuff[:i]
-                after = stuff[target:]
-
-                middle = stuff[i:target]
-                temp = middle.pop(0)
-                middle.append(temp)
-
-                stuff = before + middle + after
-
-            elif value > 0:
-                # SUB-CASE value is moving right
-                """
-                1 2 -2 5 -6 0
-                move 2
-                should become
-                1 -2 5 2 -6 0
-
-                i = 1
-                target = (1 + 2) % 6 = 3
-
-                [1] [2, -2, 5] [-6 0]
-                * INCLUDE TARGET *
-                [1] + (pop(0) and append) + [-6 0]
-                [1] + [-2, 5, 2] + [-6 0]
-                1, -2, 5, 2, -6, 0
-                """
-
-                before = stuff[:i]
-                after = stuff[target + 1 :]
-
-                middle = stuff[i : target + 1]
-                temp = middle.pop(0)
-                middle.append(temp)
-
-                stuff = before + middle + after
-
+    if target == ix:
+        if value > 0:
+            elements[ix], elements[ix + 1] = elements[ix + 1], elements[ix]
         else:
-            # CASE target ix is lower than starting ix
+            elements[ix], elements[ix - 1] = elements[ix - 1], elements[ix]
+        return elements
 
-            if value < 0:
-                # SUB-CASE value is moving left
-                """
-                1 -3 -2 5 -6 0
-                move -2
-                should become
-                -2 1 -3 5 -6 0
+    if value > 0:
+        if target > ix:
+            before = elements[:ix]
+            after = elements[target + 1 :]
+            middle = elements[ix : target + 1]
 
-                i = 2
-                target = (2 - 2) % 6 = 0
-                [] [1 -3 -2] [5 -6 0]
-                [] (pop last and prepend) [5 -6 0]
-                [] + [-2 1 -3] [5 -6 0]
-                -2 1 -3 5 -6 0
+            temp = middle.pop(0)
+            middle.append(temp)
+            return before + middle + after
+        else:
+            before = elements[: target + 1]
+            after = elements[ix + 1 :]
+            middle = elements[target + 1 : ix + 1]
 
-                RANGE IS FROM TARGET TO I, include I
-                """
+            temp = middle.pop(-1)
+            middle = [temp] + middle
+            return before + middle + after
+    else:
+        if target < ix:
+            before = elements[:target]
+            after = elements[ix + 1 :]
+            middle = elements[target : ix + 1]
 
-                before = stuff[:target]
-                after = stuff[i + 1 :]
+            temp = middle.pop(-1)
+            middle = [temp] + middle
+            return before + middle + after
+        else:
+            before = elements[:ix]
+            after = elements[target:]
+            middle = elements[ix:target]
 
-                middle = stuff[target : i + 1]
-                temp = middle.pop(-1)
-                middle = [temp] + middle
-
-                stuff = before + middle + after
-
-            elif value > 0:
-                # SUB-CASE value is moving right and wraps around
-                """
-                1 2 -2 4 -6 0
-                move 4
-                should become
-                1 2 4 -2 -6 0
-
-                i = 3
-                target = (3 + 4) % 6 = 1
-
-                [1 2] [-2 4] [-6 0]
-
-                RANGE IS FROM TARGET+1 TO I, including I
-                """
-
-                before = stuff[: target + 1]
-                after = stuff[i + 1 :]
-
-                middle = stuff[target + 1 : i + 1]
-                temp = middle.pop(-1)
-                middle = [temp] + middle
-
-                stuff = before + middle + after
-
-        # print(f"\nSwapping the og value {value} at {og_ix=}, {i=}, {target=}")
-
-        # print(stuff)
-        # print(_decrypt_uuids(stuff, og_stuff, uuid_to_og_ix))
-
-    return _decrypt_uuids(stuff, og_stuff, uuid_to_og_ix)
+            temp = middle.pop(0)
+            middle.append(temp)
+            return before + middle + after
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
-def part_one(stuff):
+def part_one(numbers):
 
-    stuff = _run_switcheroos_v2(stuff)
+    # print(len(numbers))
+    # return
 
-    i = stuff.index(0)
-    size = len(stuff)
+    (
+        translated_numbers,
+        ix_to_uuid,
+        uuid_to_ix,
+        original_ordered_numbers,
+    ) = _translate_numbers(numbers)
+
+    # print("\nInitial")
+    # print(original_ordered_numbers)
+
+    for i in range(len(original_ordered_numbers)):
+        original_value = original_ordered_numbers[i]
+        target_uuid = ix_to_uuid[i]
+        ix = translated_numbers.index(target_uuid)
+
+        # if original_value == 5753:
+        #     print(f"\nMove {original_value=} which is now at {ix=}")
+
+        translated_numbers = _move_element_at_ix_by_value(
+            translated_numbers,
+            ix,
+            original_value,
+        )
+        # print(
+        #     _translate_uuids(translated_numbers, original_ordered_numbers, uuid_to_ix)
+        # )
+
+    numbers = _translate_uuids(translated_numbers, original_ordered_numbers, uuid_to_ix)
+
+    i = numbers.index(0)
+    size = len(numbers)
 
     return (
-        stuff[(i + 1000) % size] + stuff[(i + 2000) % size] + stuff[(i + 3000) % size]
+        numbers[(i + 1000) % size]
+        + numbers[(i + 2000) % size]
+        + numbers[(i + 3000) % size]
     )
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(stuff):
 
-    print()
-    print(f"Initial")
-    stuff = [n * 811589153 for n in stuff]
-    print(stuff)
+    pass
 
-    for n in range(10):
-        stuff = _run_switcheroos_v2(stuff)
-        print()
-        print(f"Round {n+1}")
-        print(stuff)
 
-    print()
-    i = stuff.index(0)
-    size = len(stuff)
+# ----------------------------------------------------------------------------------------------
 
-    return (
-        stuff[(i + 1000) % size] + stuff[(i + 2000) % size] + stuff[(i + 3000) % size]
+
+def run_tests():
+    def _assert_equal(actual, expected):
+        if expected != actual:
+            raise AssertionError(f"Actual {actual} != expected {expected}")
+
+    move = _move_element_at_ix_by_value
+
+    # Move by 0 value doesn't change anything, for any ix.
+    for ix in range(5):
+        _assert_equal(
+            move(list("ABCDE"), ix=ix, value=0),
+            list("ABCDE"),
+        )
+
+    # Move by value that causes target and ix to be the same
+    # TODO I'm not convinced this is right
+    _assert_equal(
+        move(list("abcde"), ix=2, value=5),
+        list("abdce"),
     )
+    _assert_equal(
+        move(list("abcde"), ix=2, value=-5),
+        list("acbde"),
+    )
+
+    # ####################
+    # Positive value tests
+    # ####################
+
+    # Move positive value which is 1 less than the len of the sequence, doesn't change anything.
+    # **** This should be equivalent to just doing nothing!! ****
+    # ABCDE is equivalent to BCDEA if your consider it a circular list.
+    # LOOK HERE if things are awry later.
+    _assert_equal(
+        move(list("abcde"), ix=0, value=4),
+        list("bcdea"),
+    )
+    for ix in range(1, 5):
+        _assert_equal(
+            move(list("abcde"), ix=ix, value=4),
+            list("abcde"),
+        )
+
+    # Move positive value to the right, not immediately adjacent, no wrapping, no edge touching.
+    _assert_equal(
+        move(list("abcdefgh"), ix=1, value=2),
+        list("acdbefgh"),
+    )
+    _assert_equal(
+        move(list("abcdefgh"), ix=1, value=5),
+        list("acdefgbh"),
+    )
+    _assert_equal(
+        move(list("abcdefgh"), ix=4, value=2),
+        list("abcdfgeh"),
+    )
+
+    # Move positive value on left edge to the right, not reaching other edge
+    _assert_equal(
+        move(list("abcdefgh"), ix=0, value=2),
+        list("bcadefgh"),  #
+    )
+
+    # Move positive value on left edge to the right, reaching other edge
+    # **** This should be equivalent to just doing nothing!! ****
+    # ABCDE is equivalent to BCDEA if your consider it a circular list.
+    # LOOK HERE if things are awry later.
+    _assert_equal(
+        move(list("abcde"), ix=0, value=4),
+        list("bcdea"),
+    )
+
+    # Move positive value to the right so far it wraps around and target is lower than ix.
+    _assert_equal(
+        move(list("abcdefgh"), ix=6, value=2),
+        list("agbcdefh"),
+    )
+    _assert_equal(
+        move(list("abcdefgh"), ix=5, value=4),
+        list("abfcdegh"),
+    )
+    _assert_equal(
+        move(list("abcde"), ix=4, value=2),
+        list("abecd"),
+    )
+    _assert_equal(
+        move(list("abcde"), ix=4, value=4),
+        list("abcde"),
+    )
+
+    # ####################
+    # Negative value tests
+    # ####################
+
+    # Move negative value to the left, not immediately adjacent, no wrapping, no edge touching.
+    _assert_equal(
+        move(list("abcdefgh"), ix=5, value=-2),
+        list("abcfdegh"),
+    )
+    _assert_equal(
+        move(list("abcdefgh"), ix=2, value=-1),
+        list("acbdefgh"),
+    )
+
+    # Move negative value on right edge to the left, not reaching other edge
+    _assert_equal(
+        move(list("abcdefgh"), ix=7, value=-2),
+        list("abcdehfg"),
+    )
+
+    # Move negative value on right edge to the left, reaching other edge
+    # **** This should be equivalent to just doing nothing!! ****
+    # ABCDE is equivalent to BCDEA if your consider it a circular list.
+    # LOOK HERE if things are awry later.
+    _assert_equal(
+        move(list("abcde"), ix=4, value=-4),
+        list("eabcd"),
+    )
+
+    # Move negative value to the left so far it wraps around and target is higher than ix.
+    _assert_equal(
+        move(list("abcdefgh"), ix=1, value=-3),
+        list("acdefbgh"),
+    )
+    _assert_equal(
+        move(list("abcdefgh"), ix=0, value=-5),
+        list("bcadefgh"),
+    )
+    _assert_equal(
+        move(list("abcdefgh"), ix=4, value=-5),
+        list("abcdfgeh"),
+    )
+
+    # Move negative value which is 1 less than the len of the sequence, doesn't change anything.
+    # **** This should be equivalent to just doing nothing!! ****
+    # ABCDE is equivalent to BCDEA if your consider it a circular list.
+    # LOOK HERE if things are awry later.
+    _assert_equal(
+        move(list("abcde"), ix=4, value=-4),
+        list("eabcd"),
+    )
+    for ix in range(0, 4):
+        _assert_equal(
+            move(list("abcde"), ix=ix, value=-4),
+            list("abcde"),
+        )
 
 
 # ----------------------------------------------------------------------------------------------
 
 
 def run(input_file):
+
+    run_tests()
 
     stuff = [int(n) for n in get_input(input_file)]
     part_one(stuff)
