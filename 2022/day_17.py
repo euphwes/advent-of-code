@@ -12,6 +12,7 @@ PART_ONE_ANSWER = None
 PART_TWO_DESCRIPTION = ""
 PART_TWO_ANSWER = None
 
+
 GUST_RIGHT = ">"
 GUST_LEFT = "<"
 
@@ -79,23 +80,8 @@ class RockChamber:
     def __init__(self):
         self.width = 7
 
-        # Holds the rows of the chamber such that each row in the list corresponds to the next
-        # row higher up in the chamber.
-        #
-        # Ex: self.rows = [
-        #     '..####.',
-        #     '...##..',
-        #     '...##..',
-        #     '....###',
-        # ]
-        #
-        # Looks like this if you print the chamber
-        #
-        #     |....###|
-        #     |...##..|
-        #     |...##..|
-        #     |..####.|
-        #     +-------+
+        self.n_blocks_resting = 0
+        self.latest_gi = None
 
         self.resting_rows = defaultdict(_empty_row)
         self.falling_rows = defaultdict(_empty_row)
@@ -120,8 +106,21 @@ class RockChamber:
             combined = self._combine(resting, falling)
 
             printed_rows.append(f"|{''.join(combined)}|")
-        printed_rows.append("\n")
         return "\n".join(reversed(printed_rows))
+
+    def _trim_chamber(self):
+        to_del = list()
+
+        i = max(self.resting_rows.keys())
+        while True:
+            if all(c == AIR_SPACE for c in self.resting_rows[i]):
+                to_del.append(i)
+                i -= 1
+                continue
+            break
+
+        for i in to_del:
+            del self.resting_rows[i]
 
     def _combine(self, resting, falling):
         combined = list()
@@ -141,7 +140,7 @@ class RockChamber:
     def _apply_gravity(self):
         """Attempt to make the falling rock fall down a unit."""
 
-        print("Falling")
+        # print("Falling")
 
         min_occupied_ix = 9999999999999999
         for i, falling_row in reversed(self.falling_rows.items()):
@@ -163,7 +162,7 @@ class RockChamber:
     def _apply_gust(self, gust):
         """Apply a gust of wind to the rock and maybe move it left or right."""
 
-        print(f"Gust {gust}")
+        # print(f"Gust {gust}")
 
         # First just see if the rock would hit the wall of the chanber.
         if gust == GUST_RIGHT:
@@ -205,18 +204,31 @@ class RockChamber:
         # setup
 
         max_height = max(self.resting_rows.keys())
-        self.resting_rows[max_height + 1] = _empty_row()
-        self.resting_rows[max_height + 2] = _empty_row()
+        if self.n_blocks_resting == 0:
+            self.resting_rows[max_height + 1] = _empty_row()
+            self.resting_rows[max_height + 2] = _empty_row()
 
-        for i, falling_row in enumerate(reversed(rock_pattern)):
-            self.falling_rows[max_height + 3 + i] = falling_row
+            for i, falling_row in enumerate(reversed(rock_pattern)):
+                self.falling_rows[max_height + 3 + i] = falling_row
+        else:
+            self.resting_rows[max_height + 1] = _empty_row()
+            self.resting_rows[max_height + 2] = _empty_row()
+            self.resting_rows[max_height + 3] = _empty_row()
+
+            for i, falling_row in enumerate(reversed(rock_pattern)):
+                self.falling_rows[max_height + 4 + i] = falling_row
 
         try:
-            print(self)
+            # print(self)
             while True:
-                self._apply_gust(next(wind_gusts))
+                gi, gust = next(wind_gusts)
+                self.latest_gi = gi
+
+                self._apply_gust(gust)
+                # print(self)
+
                 self._apply_gravity()
-                print(self)
+                # print(self)
         except CannotOccupySameSpaceException:
             for i in self.falling_rows.keys():
                 self.resting_rows[i] = self._combine(
@@ -224,26 +236,100 @@ class RockChamber:
                     self.falling_rows[i],
                 )
             self.falling_rows = defaultdict(_empty_row)
-            print(self)
+            self._trim_chamber()
+            self.n_blocks_resting += 1
+            # print(self)
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(wind_gusts):
     def wind_generator():
         while True:
-            yield from wind_gusts
+            yield from enumerate(wind_gusts)
+
+    def block_generator():
+        while True:
+            yield from enumerate(
+                [HORIZONTAL_BLOCK, PLUS_BLOCK, L_BLOCK, VERTICAL_BLOCK, SQUARE_BLOCK]
+            )
 
     endless_wind = wind_generator()
 
     chamber = RockChamber()
-    chamber.simulate_falling_rock(HORIZONTAL_BLOCK, endless_wind)
-    chamber.simulate_falling_rock(PLUS_BLOCK, endless_wind)
-    chamber.simulate_falling_rock(L_BLOCK, endless_wind)
+
+    for _, block in block_generator():
+        chamber.simulate_falling_rock(block, endless_wind)
+        if chamber.n_blocks_resting == 2022:
+            break
+
+    # print(chamber)
+    return max(chamber.resting_rows.keys()) + 1
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(wind_gusts):
-    pass
+    wind_gusts_size = len(wind_gusts)
+
+    def wind_generator():
+        while True:
+            yield from enumerate(wind_gusts)
+
+    def block_generator():
+        while True:
+            yield from enumerate(
+                [HORIZONTAL_BLOCK, PLUS_BLOCK, L_BLOCK, VERTICAL_BLOCK, SQUARE_BLOCK]
+            )
+
+    chamber = RockChamber()
+
+    block_gen = block_generator()
+    endless_wind = wind_generator()
+
+    is_first_run = True
+    bi = None
+
+    while True:
+
+        # TODO trim all but the top N layers of the chamber? and track height separately
+
+        # check if block_count % 10000000 or whatever == 0
+        # check that highest row would block a horizontal block when it fell like the chamber
+        # bottom did
+
+        # print((bi, chamber.latest_gi))
+
+        # if (bi, chamber.latest_gi) == (0, 0):
+        #     print()
+        #     print("omg")
+        #     print(f"Blocks: {chamber.n_blocks_resting}")
+        #     return
+
+        if chamber.n_blocks_resting % 5000 == 0:
+            print()
+            print((bi, chamber.latest_gi))
+            print(f"Blocks: {chamber.n_blocks_resting}")
+
+        if (bi, chamber.latest_gi) == (4, wind_gusts_size - 1):
+            print()
+            print(f"ixs back to start at n blocks = {chamber.n_blocks_resting}")
+            return
+
+        if not is_first_run and (bi, chamber.latest_gi) == (4, wind_gusts_size - 1):
+            try:
+                most_recent_row_ix = max(chamber.resting_rows.keys())
+                most_recent_row = chamber.resting_rows[most_recent_row_ix]
+                print(most_recent_row)
+
+                if 1000000000000 % chamber.n_blocks_resting == 0:
+                    chamber._combine(most_recent_row, HORIZONTAL_BLOCK[0])
+            except CannotOccupySameSpaceException:
+                mult = 1000000000000 // chamber.n_blocks_resting
+                return mult * (max(chamber.resting_rows.keys()) + 1)
+
+        bi, block = next(block_gen)
+        chamber.simulate_falling_rock(block, endless_wind)
+
+        is_first_run = False
 
 
 # ----------------------------------------------------------------------------------------------
@@ -254,4 +340,4 @@ def run(input_file):
     wind_gusts = get_input(input_file)[0]
 
     part_one(wind_gusts)
-    part_two(wind_gusts)
+    # part_two(wind_gusts)
