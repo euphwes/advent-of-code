@@ -83,6 +83,7 @@ class CannotOccupySameSpaceException(Exception):
 class RockChamber:
     def __init__(self):
         self.width = 7
+        self.height = 0
 
         self.n_blocks_resting = 0
         self.latest_gi = None
@@ -113,6 +114,7 @@ class RockChamber:
         return "\n".join(reversed(printed_rows))
 
     def _trim_chamber(self):
+
         to_del = list()
 
         i = max(self.resting_rows.keys())
@@ -122,6 +124,18 @@ class RockChamber:
                 i -= 1
                 continue
             break
+
+        for i in to_del:
+            del self.resting_rows[i]
+
+        self.height = max(self.resting_rows.keys()) + 1
+
+        # Also delete the 15 rows under the top rows
+        lower = max(self.resting_rows.keys()) - 50
+        to_del = list()
+        for i in self.resting_rows.keys():
+            if i < lower:
+                to_del.append(i)
 
         for i in to_del:
             del self.resting_rows[i]
@@ -200,9 +214,6 @@ class RockChamber:
             except CannotOccupySameSpaceException:
                 return
 
-        # If we don't have any remaining vertical space, then we overlap horizontally with some
-        # already-resting rock in the chamber. Get the overlap mapping.
-
     def simulate_falling_rock(self, rock_pattern, wind_gusts):
 
         # setup
@@ -266,12 +277,11 @@ def part_one(wind_gusts):
         if chamber.n_blocks_resting == 2022:
             break
 
-    # print(chamber)
-    return max(chamber.resting_rows.keys()) + 1
+    return chamber.height
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
-def part_two(wind_gusts):
+def part_two_archive(wind_gusts):
     wind_gusts_size = len(wind_gusts)
 
     def wind_generator():
@@ -396,6 +406,41 @@ Most recent block would block a falling horizontal block
 height_now=121148
 
         """
+
+
+@aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
+def part_two(wind_gusts):
+    wind_gusts_size = len(wind_gusts)
+    print(f"{wind_gusts_size=}")
+
+    def wind_generator():
+        while True:
+            yield from enumerate(wind_gusts)
+
+    def block_generator():
+        while True:
+            yield from enumerate(
+                [HORIZONTAL_BLOCK, PLUS_BLOCK, L_BLOCK, VERTICAL_BLOCK, SQUARE_BLOCK]
+            )
+
+    endless_wind = wind_generator()
+    block_gen = block_generator()
+
+    chamber = RockChamber()
+
+    bi = None
+    while True:
+
+        if chamber.latest_gi == wind_gusts_size - 1 and bi == 4:
+            print()
+            print(f"At beginning of wind cycle at start of new block after")
+            print(f"{chamber.n_blocks_resting=}")
+            print(f"{chamber.height=}")
+            print(f"{bi=}")
+            return
+
+        bi, block = next(block_gen)
+        chamber.simulate_falling_rock(block, endless_wind)
 
 
 # ----------------------------------------------------------------------------------------------
