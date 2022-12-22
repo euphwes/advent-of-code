@@ -1,37 +1,36 @@
+from collections import defaultdict
+
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 from util.iter import bidirectional_range, int_stream
 
-from collections import defaultdict
-
-DAY  = 14
+DAY = 14
 YEAR = 2022
 
-PART_ONE_DESCRIPTION = 'number of grains of sand before they enter the abyss'
+PART_ONE_DESCRIPTION = "number of grains of sand before they enter the abyss"
 PART_ONE_ANSWER = 692
 
-PART_TWO_DESCRIPTION = 'number of grains of sand before source is blocked'
+PART_TWO_DESCRIPTION = "number of grains of sand before source is blocked"
 PART_TWO_ANSWER = 31706
 
-#---------------------------------------------------------------------------------------------------
 
-AIR  = '.'
-ROCK = '#'
-SAND = 'o'
+AIR = "."
+ROCK = "#"
+SAND = "o"
 
 SAND_SOURCE = (500, 0)
 
 
 def _get_cave_map(cave_walls_info):
-    """ Parses the input file and returns a dictionary of cave coordinates to
+    """Parses the input file and returns a dictionary of cave coordinates to
     what's there, starting with empty except where the input file specifies
-    there is rock. """
+    there is rock."""
 
-    cave_map = defaultdict(lambda: '.')
+    cave_map = defaultdict(lambda: ".")
 
     while cave_walls_info:
         wall_info = cave_walls_info.pop(0)
-        coords = wall_info.split(' -> ')
+        coords = wall_info.split(" -> ")
 
         # On each line, iterate between each adjacent pair of coordinates and
         # fill those coordinates with rock.
@@ -40,8 +39,8 @@ def _get_cave_map(cave_walls_info):
             start = stop
             stop = coords.pop(0)
 
-            stop_x, stop_y = (int(n) for n in stop.split(','))
-            start_x, start_y = (int(n) for n in start.split(','))
+            stop_x, stop_y = (int(n) for n in stop.split(","))
+            start_x, start_y = (int(n) for n in start.split(","))
 
             for x in bidirectional_range(start_x, stop_x, inclusive=True):
                 for y in bidirectional_range(start_y, stop_y, inclusive=True):
@@ -51,8 +50,8 @@ def _get_cave_map(cave_walls_info):
 
 
 def _fill_with_sand(cave_map, end_sim_check_fn):
-    """ Given a cave map, simulates a single particle of sand falling from the source until it comes
-    to rest, or a condition is met to cause the simulation to end. """
+    """Given a cave map, simulates a single particle of sand falling from the source until it
+    comes to rest, or a condition is met to cause the simulation to end."""
 
     # Sand particles fall in from the source
     sand_x, sand_y = SAND_SOURCE
@@ -61,18 +60,20 @@ def _fill_with_sand(cave_map, end_sim_check_fn):
     while True:
         did_fall = False
 
-        # First check if the sand can fall straight down, and then down+left, and finally down+right
+        # First check if the sand can fall straight down, and then down+left, and finally
+        # down+right
         for dx in (0, -1, 1):
-            if cave_map[(sand_x+dx, sand_y+1)] == AIR:
-                # The sand can fall this direction. Update current position and mark that it fell.
+            if cave_map[(sand_x + dx, sand_y + 1)] == AIR:
+                # The sand can fall this way. Update current position and mark that it fell.
                 sand_x += dx
                 sand_y += 1
                 did_fall = True
 
-                # Don't check the other fall positions, the earliest that works takes precedence.
+                # Don't check the other fall positions, the earliest that works takes
+                # precedence.
                 break
 
-        # Check if we've reached the condition that indicates we should stop simulating the sand.
+        # Check if we've reached the condition that indicates we should stop simulation.
         end_sim_check_fn(sand_x, sand_y)
 
         # If the sand didn't fall, break out and place the sand at its final position.
@@ -103,7 +104,8 @@ def part_one(cave_walls_info):
         for i in int_stream():
             cave_map = _fill_with_sand(cave_map, stop_if_falling_into_abyss)
     except SandFallsForever:
-        # Sand is now falling into the abyss, return how many particles came to rest before that happened.
+        # Sand is now falling into the abyss, return how many particles came to rest before that
+        # happened.
         return i
 
 
@@ -124,7 +126,7 @@ def part_two(cave_walls_info):
     # Fill in the cave map with the true floor of the cave, a straight line at y = `floor`,
     # x between SAND_SOURCE's x coordinate +/- `floor`.
     source_x = SAND_SOURCE[0]
-    for fx in bidirectional_range(source_x-floor, source_x+floor, inclusive=True):
+    for fx in bidirectional_range(source_x - floor, source_x + floor, inclusive=True):
         cave_map[(fx, floor)] = ROCK
 
     # The sand simulation runs until sand clogs the source by having a particle stop there.
@@ -139,10 +141,13 @@ def part_two(cave_walls_info):
         for i in int_stream():
             cave_map = _fill_with_sand(cave_map, stop_if_clogging_source)
     except SandClogsTheSource:
-        # Sand is clogging the source, return how many particles of sand fell to make that happen.
-        return i+1
+        # Sand is clogging the source, return how many particles of sand fell to make that
+        # happen.
+        return i + 1
 
-#---------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------
+
 
 def run(input_file):
 

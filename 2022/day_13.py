@@ -1,20 +1,19 @@
 from util.decorators import aoc_output_formatter
 from util.input import get_input, safe_eval
 
-DAY  = 13
+DAY = 13
 YEAR = 2022
 
-PART_ONE_DESCRIPTION = 'sum of indices of packets in the correct order'
+PART_ONE_DESCRIPTION = "sum of indices of packets in the correct order"
 PART_ONE_ANSWER = 6046
 
-PART_TWO_DESCRIPTION = 'decoder key for the distress signal'
+PART_TWO_DESCRIPTION = "decoder key for the distress signal"
 PART_TWO_ANSWER = 21423
 
-#---------------------------------------------------------------------------------------------------
 
 def _compare(left_list, right_list):
-    """ Compare two lists using the rules defined in https://adventofcode.com/2022/day/13,
-    and return whether the left list is "less than" the right list. """
+    """Compare two lists using the rules defined in https://adventofcode.com/2022/day/13,
+    and return whether the left list is "less than" the right list."""
 
     for i in range(len(left_list)):
         # For each element in list a, extract the element at the same index in list b.
@@ -25,8 +24,9 @@ def _compare(left_list, right_list):
             # If the left list runs out of items first, then the two lists are not in order.
             return False
 
-        # If both elements are integers, we can compare them directly. If the elements are equal,
-        # move to the next, otherwise return whether the left list's value is less than the right's.
+        # If both elements are integers, we can compare them directly. If the elements are
+        # equal, move to the next, otherwise return whether the left list's value is less than
+        # the right's.
         if isinstance(left_lement, int) and isinstance(right_element, int):
             if left_lement == right_element:
                 continue
@@ -39,10 +39,9 @@ def _compare(left_list, right_list):
         if isinstance(right_element, int):
             right_element = [right_element]
 
-        # Now we have only lists, and we can recursively compare the two.
-        # If the recursive check is not able to determine if the two inner lists are in order, the
-        # elements are equal (like two identical ints), so we continue to the next item in the
-        # outer list.
+        # Now we have only lists, and we can recursively compare the two. If the recursive check
+        # is not able to determine if the two inner lists are in order, the elements are equal
+        # (like two identical ints), so we continue to the next item in the outer list.
         retval = _compare(left_lement, right_element)
         if retval is not None:
             return retval
@@ -69,7 +68,7 @@ class Packet:
 
 
 def _parse_packets(raw_packets):
-    """ Parses Packets out of the raw problem input. """
+    """Parses Packets out of the raw problem input."""
 
     packets = list()
 
@@ -125,7 +124,9 @@ def part_two(raw_packets):
 
     return divider_a_ix * divider_b_ix
 
-#---------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------
+
 
 def run(input_file):
 
