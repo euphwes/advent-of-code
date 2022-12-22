@@ -1,4 +1,7 @@
 from collections import defaultdict
+from dataclasses import dataclass
+from email.policy import default
+from itertools import combinations
 
 from util.decorators import aoc_output_formatter
 from util.input import get_input
@@ -12,6 +15,7 @@ PART_ONE_ANSWER = None
 PART_TWO_DESCRIPTION = ""
 PART_TWO_ANSWER = None
 
+PART_TWO_NUM_BLOCKS = 1_000_000_000_000
 
 GUST_RIGHT = ">"
 GUST_LEFT = "<"
@@ -288,7 +292,38 @@ def part_two(wind_gusts):
     is_first_run = True
     bi = None
 
+    @dataclass
+    class BlockHeightInfo:
+        n_blocks: int
+        height: int
+
+    bigi_info_map = defaultdict(list)
+
     while True:
+        key_bigi = (bi, chamber.latest_gi)
+        if key_bigi != (None, None):
+            try:
+                most_recent_row_ix = max(chamber.resting_rows.keys())
+                most_recent_row = chamber.resting_rows[most_recent_row_ix]
+                if PART_TWO_NUM_BLOCKS % chamber.n_blocks_resting == 0:
+                    chamber._combine(most_recent_row, HORIZONTAL_BLOCK[0])
+            except CannotOccupySameSpaceException:
+                height_now = max(chamber.resting_rows.keys()) + 1
+
+                bigi_info_map[key_bigi].append(
+                    BlockHeightInfo(
+                        n_blocks=chamber.n_blocks_resting,
+                        height=height_now,
+                    )
+                )
+
+                if len(bigi_info_map[key_bigi]) > 1:
+                    for info1, info2 in combinations(bigi_info_map[key_bigi], 2):
+                        delta_blocks = abs(info1.n_blocks - info2.n_blocks)
+                        if PART_TWO_NUM_BLOCKS % delta_blocks == 0:
+                            delta_height = abs(info1.height - info2.height)
+                            mult = PART_TWO_NUM_BLOCKS // delta_blocks
+                            return height_now + (mult * delta_height)
 
         # TODO trim all but the top N layers of the chamber? and track height separately
 
@@ -304,32 +339,63 @@ def part_two(wind_gusts):
         #     print(f"Blocks: {chamber.n_blocks_resting}")
         #     return
 
-        if chamber.n_blocks_resting % 5000 == 0:
-            print()
-            print((bi, chamber.latest_gi))
-            print(f"Blocks: {chamber.n_blocks_resting}")
+        # if chamber.n_blocks_resting and chamber.n_blocks_resting % 5000 == 0:
+        #     print()
+        #     print(f"{bi=}")
+        #     print(f"{chamber.latest_gi=}")
+        #     print(f"Blocks: {chamber.n_blocks_resting}")
 
-        if (bi, chamber.latest_gi) == (4, wind_gusts_size - 1):
-            print()
-            print(f"ixs back to start at n blocks = {chamber.n_blocks_resting}")
-            return
+        #     try:
+        #         most_recent_row_ix = max(chamber.resting_rows.keys())
+        #         most_recent_row = chamber.resting_rows[most_recent_row_ix]
 
-        if not is_first_run and (bi, chamber.latest_gi) == (4, wind_gusts_size - 1):
-            try:
-                most_recent_row_ix = max(chamber.resting_rows.keys())
-                most_recent_row = chamber.resting_rows[most_recent_row_ix]
-                print(most_recent_row)
+        #         if PART_TWO_NUM_BLOCKS % chamber.n_blocks_resting == 0:
+        #             chamber._combine(most_recent_row, HORIZONTAL_BLOCK[0])
+        #     except CannotOccupySameSpaceException:
+        #         print("Most recent block would block a falling horizontal block")
+        #         height_now = max(chamber.resting_rows.keys()) + 1
+        #         print(f"{height_now=}")
 
-                if 1000000000000 % chamber.n_blocks_resting == 0:
-                    chamber._combine(most_recent_row, HORIZONTAL_BLOCK[0])
-            except CannotOccupySameSpaceException:
-                mult = 1000000000000 // chamber.n_blocks_resting
-                return mult * (max(chamber.resting_rows.keys()) + 1)
+        # if chamber.latest_gi == wind_gusts_size - 1:
+        #     print()
+        #     print(
+        #         "Finished a block on the last gust of the pattern at n blocks = {chamber.n_blocks_resting}"
+        #     )
+        #     return
+
+        # if (bi, chamber.latest_gi) == (4, wind_gusts_size - 1):
+        #     print()
+        #     print(f"ixs back to start at n blocks = {chamber.n_blocks_resting}")
+        #     return
+
+        # if not is_first_run and (bi, chamber.latest_gi) == (4, wind_gusts_size - 1):
+        #     try:
+        #         most_recent_row_ix = max(chamber.resting_rows.keys())
+        #         most_recent_row = chamber.resting_rows[most_recent_row_ix]
+
+        #         if PART_TWO_NUM_BLOCKS % chamber.n_blocks_resting == 0:
+        #             chamber._combine(most_recent_row, HORIZONTAL_BLOCK[0])
+        #     except CannotOccupySameSpaceException:
+        #         mult = PART_TWO_NUM_BLOCKS // chamber.n_blocks_resting
+        #         return mult * (max(chamber.resting_rows.keys()) + 1)
 
         bi, block = next(block_gen)
         chamber.simulate_falling_rock(block, endless_wind)
 
-        is_first_run = False
+        """
+bi=4
+chamber.latest_gi=14
+Blocks: 10000
+Most recent block would block a falling horizontal block
+height_now=15148
+
+bi=4
+chamber.latest_gi=14
+Blocks: 80000
+Most recent block would block a falling horizontal block
+height_now=121148
+
+        """
 
 
 # ----------------------------------------------------------------------------------------------
@@ -340,4 +406,4 @@ def run(input_file):
     wind_gusts = get_input(input_file)[0]
 
     part_one(wind_gusts)
-    # part_two(wind_gusts)
+    part_two(wind_gusts)
