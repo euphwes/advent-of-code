@@ -2,7 +2,7 @@ from util.decorators import aoc_output_formatter
 from util.input import get_input
 
 DAY = 1
-YEAR = 2022
+YEAR = 2018
 
 PART_ONE_DESCRIPTION = ""
 PART_ONE_ANSWER = None

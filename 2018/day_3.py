@@ -1,20 +1,19 @@
-from util.decorators import aoc_output_formatter
-from util.input import get_input
-
 from collections import defaultdict
 from dataclasses import dataclass
 from typing import Tuple
 
-DAY  = 3
+from util.decorators import aoc_output_formatter
+from util.input import get_input
+
+DAY = 3
 YEAR = 2018
 
-PART_ONE_DESCRIPTION = 'square inches of fabric with overlapping claims'
+PART_ONE_DESCRIPTION = "square inches of fabric with overlapping claims"
 PART_ONE_ANSWER = 115304
 
-PART_TWO_DESCRIPTION = 'ID of claim that does not overlap with any other'
+PART_TWO_DESCRIPTION = "ID of claim that does not overlap with any other"
 PART_TWO_ANSWER = 275
 
-#---------------------------------------------------------------------------------------------------
 
 @dataclass
 class FabricClaim:
@@ -25,25 +24,25 @@ class FabricClaim:
 
     @staticmethod
     def from_line(line):
-        """ Parses a line of the problem input and returns a FabricClaim which gives its ID and
-        describes its plot. """
+        """Parses a line of the problem input and returns a FabricClaim which gives its ID and
+        describes its plot."""
 
-        raw_id, plot_info = line.split(' @ ')
-        claim_id = int(raw_id.replace('#', ''))
-        raw_coord, raw_size = plot_info.split(': ')
-        cx, cy = (int(n) for n in raw_coord.split(','))
-        size_x, size_y = (int(n) for n in raw_size.split('x'))
+        raw_id, plot_info = line.split(" @ ")
+        claim_id = int(raw_id.replace("#", ""))
+        raw_coord, raw_size = plot_info.split(": ")
+        cx, cy = (int(n) for n in raw_coord.split(","))
+        size_x, size_y = (int(n) for n in raw_size.split("x"))
 
         return FabricClaim(
-            id = claim_id,
-            size_x = size_x,
-            size_y = size_y,
-            corner_coord = (cx, cy),
+            id=claim_id,
+            size_x=size_x,
+            size_y=size_y,
+            corner_coord=(cx, cy),
         )
 
-
     def covered_fabric(self):
-        """ Returns a list of the coordinates of all square inches of fabric this Claim covers."""
+        """Returns a list of the coordinates of all square inches of fabric this Claim
+        covers."""
 
         covered_fabric_coords = list()
 
@@ -97,7 +96,9 @@ def part_two(claim_info):
         if not has_overlap:
             return claim
 
-#---------------------------------------------------------------------------------------------------
+
+# ----------------------------------------------------------------------------------------------
+
 
 def run(input_file):
 
