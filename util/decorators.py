@@ -10,7 +10,7 @@ SECONDS_ELAPSED = "Ran in {}.{} s"
 
 
 def aoc_output_formatter(
-    year, day, part, label=None, ignore_return_val=False, assert_answer=None
+    year, day, part, label, ignore_return_val=False, assert_answer=None
 ):
     """Builds a decorator to format the output for a specific AoC solution function with
     niceties like the current day, which problem part it is, and an optional meaningful label
