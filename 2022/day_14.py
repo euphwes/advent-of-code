@@ -86,7 +86,6 @@ def _fill_with_sand(cave_map, end_sim_check_fn):
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(cave_walls_info):
-
     cave_map = _get_cave_map(cave_walls_info)
     lowest_wall = max(y for _, y in cave_map.keys())
 
@@ -111,7 +110,6 @@ def part_one(cave_walls_info):
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(cave_walls_info):
-
     cave_map = _get_cave_map(cave_walls_info)
 
     # Oops, the cave actually has an infinite floor 2 units below the lowest rock that we knew
@@ -150,7 +148,6 @@ def part_two(cave_walls_info):
 
 
 def run(input_file):
-
     cave_walls_info = get_input(input_file)
     part_one(cave_walls_info)
 
