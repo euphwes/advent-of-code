@@ -11,7 +11,7 @@ PART_ONE_ANSWER = 106
 PART_TWO_DESCRIPTION = None
 PART_TWO_ANSWER = None
 
-PIXEL_ON = "#"
+PIXEL_ON = "█"
 PIXEL_OFF = " "
 
 _build_screen = lambda x, y: [list(PIXEL_OFF * x) for _ in range(y)]
@@ -43,7 +43,6 @@ def _simulate_screen(screen, instructions):
             screen[i][col] = rotated[i]
 
     for step in instructions:
-
         # Parse a rect command by extracting the x, y values
         if step.startswith("rect "):
             step = step.replace("rect ", "")
@@ -82,7 +81,7 @@ def part_one(instructions, x, y):
     return sum(sum(1 for p in row if p == PIXEL_ON) for row in screen)
 
 
-@aoc_output_formatter(YEAR, DAY, 2, ignore_return_val=True)
+@aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, ignore_return_val=True)
 def part_two(instructions, x, y):
     screen = _build_screen(x, y)
     _simulate_screen(screen, instructions)
@@ -93,7 +92,6 @@ def part_two(instructions, x, y):
 
 
 def run(input_file):
-
     instructions = get_input(input_file)
 
     part_one(instructions, 50, 6)
