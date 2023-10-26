@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Callable, Dict, List
 
 from util.input import safe_eval
 
@@ -19,6 +19,90 @@ class AssemblyInstruction:
 
         pieces = [int(n) for n in line.split(" ")]
         return AssemblyInstruction(code=pieces[0], params=pieces[1:])
+
+
+@dataclass
+class CompleteAssemblyInstruction:
+    """Represents an instruction in a program. Contains an operation and 3 parameters."""
+
+    operation_txt: str
+    operation: Callable
+    params: List[int]
+
+    @staticmethod
+    def from_line(line: str):
+        """Returns an CompleteAssemblyInstruction as parsed from a line of the input."""
+
+        pieces = line.split(" ")
+        params = [int(n) for n in pieces[1:]]
+
+        operation = {
+            "addr": _addr,
+            "addi": _addi,
+            "mulr": _mulr,
+            "muli": _muli,
+            "banr": _banr,
+            "bani": _bani,
+            "borr": _borr,
+            "bori": _bori,
+            "setr": _setr,
+            "seti": _seti,
+            "gtir": _gtir,
+            "gtri": _gtri,
+            "gtrr": _gtrr,
+            "eqir": _eqir,
+            "eqri": _eqri,
+            "eqrr": _eqrr,
+        }[pieces[0]]
+
+        return CompleteAssemblyInstruction(
+            operation_txt=pieces[0], operation=operation, params=params
+        )
+
+    def execute(self, registers):
+        return self.operation(self.params, registers)
+
+    def __str__(self):
+        return f"{self.operation_txt} {' '.join([str(x) for x in self.params])}"
+
+
+class AssemblyComputer:
+    def __init__(self, raw_program):
+        self.ip = 0
+        self.ip_register = None
+
+        # If the first line in a program is a declaration binding the IP
+        # to a register, remember which register. Ex: #ip 4
+        if raw_program[0].startswith("#"):
+            ip_bind_line = raw_program.pop(0)
+            self.ip_register = int(ip_bind_line.split(" ")[-1])
+
+        self.program = [
+            CompleteAssemblyInstruction.from_line(line) for line in raw_program
+        ]
+        self.program_size = len(self.program)
+
+        self.registers = {n: 0 for n in range(6)}
+
+    def run(self):
+        c = 0
+        while True:
+            if self.ip >= self.program_size:
+                return
+
+            c += 1
+
+            if self.ip_register is not None:
+                self.registers[self.ip_register] = self.ip
+
+            # print(f"\n[{' '.join([str(x) for x in self.registers.values()])}]")
+            instruction = self.program[self.ip]
+            # print(f"{self.ip} {instruction}")
+            self.registers = instruction.execute(self.registers)
+            # print(f"[{' '.join([str(x) for x in self.registers.values()])}]")
+
+            if self.ip_register is not None:
+                self.ip = self.registers[self.ip_register] + 1
 
 
 @dataclass
