@@ -28,7 +28,7 @@ def aoc_output_formatter(
         output string based on the year, day, part, and optional output label passed in
         above."""
 
-        @__aocTimer()
+        @aocTimer()
         def __fn_wrapper(*args):
             """The decorated function, which is timed using the timer context manager class
             defined below."""
@@ -55,7 +55,7 @@ def aoc_output_formatter(
     return __aoc_formatter_decorator
 
 
-class __aocTimer(ContextDecorator):
+class aocTimer(ContextDecorator):
     """Records the runtime of the decorated function, and prints out a user-friendly
     representation of the elapsed time."""
 
