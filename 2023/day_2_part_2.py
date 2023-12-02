@@ -30,6 +30,11 @@ powers = list()
 
 # For each game in the list...
 for game_line in cube_game_info:
+    # For each game we want to figure out the minimum number of blocks of each color to make
+    # that game possible. We'll start by assuming we need 0 of each block, and then we'll later
+    # run through all the block pulls to see if it says we need more than we currently have.
+    # Ex: 3 blue --> means we need at least 3 blue, so 0 is too few, so we'll update this map
+    # for 3 for the key "blue".
     minimum_counts_by_block_color = {
         "red": 0,
         "green": 0,
