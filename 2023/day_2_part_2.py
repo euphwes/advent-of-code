@@ -88,6 +88,11 @@ for game_line in cube_game_info:
             if num > minimum_counts_by_block_color[color]:
                 minimum_counts_by_block_color[color] = num
 
+    # The game's power is the product of the all minimum number of all the blocks, so we take
+    # the product of all those. We can get just the "values" (the block counts) out of our
+    # map/dictionary minimum_counts_by_block_color by calling .values() on it.
+    # Start with 1 and then multiply by all the block counts in
+    # minimum_counts_by_block_color.values()
     game_power = 1
     for block_count in minimum_counts_by_block_color.values():
         game_power = game_power * block_count
