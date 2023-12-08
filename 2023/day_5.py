@@ -1,21 +1,22 @@
-from functools import lru_cache
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 from util.iter import int_stream
 
+from math import inf as INFINITY
+
 DAY = 5
 YEAR = 2023
 
-PART_ONE_DESCRIPTION = ""
+PART_ONE_DESCRIPTION = "lowest location corresponding to an initial seed (too few)"
 PART_ONE_ANSWER = 331445006
 
-PART_TWO_DESCRIPTION = ""
+PART_TWO_DESCRIPTION = "lowest location corresponding to an initial seed (full seeds)"
 PART_TWO_ANSWER = 6472060
 
 
-@aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
-def part_one(stuff):
-    seeds = list()
+def _build_almanac_maps(almanac_except_seeds):
+    """Build and return all the maps in the almanac, which map seed to soil numbers,
+    soil to fertilizer numbers, etc."""
 
     seed_to_soil = list()
     soil_to_fert = list()
@@ -34,25 +35,37 @@ def part_one(stuff):
         temp_to_humid,
         humid_to_loc,
     ]
+    curr_map = None
 
-    line = stuff.pop(0)
-    if "seeds:" in line:
-        seeds = [int(x) for x in line.replace("seeds: ", "").split()]
-    stuff.pop(0)
-
-    curr_map = list()
-    while stuff:
-        line = stuff.pop(0)
+    # Keeping reading through the alamanac input line-by-line
+    while almanac_except_seeds:
+        line = almanac_except_seeds.pop(0)
         if not line:
             continue
+
+        # If the word "map" is in the line, we've finished parsing all of the number ranges
+        # mapped in the current line. Move on to the next map we need to parse.
         if "map" in line:
             curr_map = maps.pop(0)
             continue
 
-        d_start, s_start, size = (int(x) for x in line.split())
-        curr_map.append(((s_start, s_start + size - 1), (d_start, d_start + size - 1)))
+        # Each line is 3 integers: the start of the destination range, the start of the source
+        # range, and the size of both ranges.
+        destination_start, source_start, size = (int(x) for x in line.split())
 
-    maps = [
+        # Append two tuples to the current map, the start and endpoints of both the start and
+        # destination ranges.
+        assert curr_map is not None
+        curr_map.append(
+            (
+                (source_start, source_start + size - 1),
+                (destination_start, destination_start + size - 1),
+            )
+        )
+
+    # Return the list of maps in the order that they'll need to be evaluated when translating
+    # from seed to location values.
+    return [
         seed_to_soil,
         soil_to_fert,
         fert_to_water,
@@ -62,93 +75,74 @@ def part_one(stuff):
         humid_to_loc,
     ]
 
-    locations = list()
-    for s in seeds:
-        init = s
+
+@aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
+def part_one(almanac):
+    # Parse the list of seeds out of the first line of the puzzle input.
+    line = almanac.pop(0)
+    seeds = [int(x) for x in line.replace("seeds: ", "").split()]
+
+    maps = _build_almanac_maps(almanac)
+
+    # For every seed, follow it through all the maps to find the corresponding location.
+    # Keep track of the minimum location.
+    minimum_location = INFINITY
+    for value in seeds:
         for mmap in maps:
             for s_range, d_range in mmap:
-                if s >= s_range[0] and s <= s_range[1]:
-                    ix = s - s_range[0]
-                    s = d_range[0] + ix
+                if value >= s_range[0] and value <= s_range[1]:
+                    ix = value - s_range[0]
+                    value = d_range[0] + ix
                     break
-        locations.append(s)
-        # print(f"{init} goes to {s}")
+        minimum_location = min([value, minimum_location])
 
-    return min(locations)
+    return minimum_location
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
-def part_two(stuff):
-    seeds = list()
-
-    seed_to_soil = list()
-    soil_to_fert = list()
-    fert_to_water = list()
-    water_to_light = list()
-    light_to_temp = list()
-    temp_to_humid = list()
-    humid_to_loc = list()
-
-    maps = [
-        seed_to_soil,
-        soil_to_fert,
-        fert_to_water,
-        water_to_light,
-        light_to_temp,
-        temp_to_humid,
-        humid_to_loc,
-    ]
-
-    line = stuff.pop(0)
-    if "seeds:" in line:
-        seeds = [int(x) for x in line.replace("seeds: ", "").split()]
-    stuff.pop(0)
-
-    curr_map = list()
-    while stuff:
-        line = stuff.pop(0)
-        if not line:
-            continue
-        if "map" in line:
-            curr_map = maps.pop(0)
-            continue
-
-        d_start, s_start, size = (int(x) for x in line.split())
-        curr_map.append(((s_start, s_start + size - 1), (d_start, d_start + size - 1)))
-
-    maps = [
-        seed_to_soil,
-        soil_to_fert,
-        fert_to_water,
-        water_to_light,
-        light_to_temp,
-        temp_to_humid,
-        humid_to_loc,
-    ]
+def part_two(almanac):
+    # Parse a list of (range_start, range_size) tuples for seed values out of the first line
+    # of the puzzle input.
+    line = almanac.pop(0)
+    seeds = [int(x) for x in line.replace("seeds: ", "").split()]
 
     seed_ranges = list()
     while seeds:
-        s1 = seeds.pop(0)
-        s2 = seeds.pop(0)
-        seed_ranges.append((s1, s1 + s2 - 1))
+        start_seed = seeds.pop(0)
+        range_size = seeds.pop(0)
+        seed_ranges.append((start_seed, start_seed + range_size - 1))
 
     def _does_seed_exist(target_seed):
+        """Helper function for determining if a given seed is inside any of the ranges
+        of initial seeds defined by the puzzle input."""
         for sr_start, sr_end in seed_ranges:
             if sr_start <= target_seed and target_seed <= sr_end:
                 return True
         return False
 
-    sorted_locs = sorted(humid_to_loc, key=lambda x: x[1][0])
-    for _, loc_range in sorted_locs:
-        for loc in int_stream(loc_range[0], loc_range[1]):
-            init_loc = loc
+    # Parse the almanac and get the seed-to-soil-to-fertilizer-to...-to-location maps.
+    # Sort the humidity-to-location map by the starting value of the location ranges, from
+    # low to high, because we're going to iterate over all possible locations, lowest to highest
+    maps = _build_almanac_maps(almanac)
+    humid_to_loc = maps[-1]
+    sorted_locations = sorted(humid_to_loc, key=lambda x: x[1][0])
+
+    # For each location range...
+    for _, loc_range in sorted_locations:
+        # ... for every location in that range...
+        for value in int_stream(loc_range[0], loc_range[1]):
+            # Remember the starting location, and then follow the location value all the way
+            # through the maps until we get to a seed value.
+            init_loc = value
             for mmap in reversed(maps):
                 for s_range, d_range in mmap:
-                    if loc >= d_range[0] and loc <= d_range[1]:
-                        ix = loc - d_range[0]
-                        loc = s_range[0] + ix
+                    if value >= d_range[0] and value <= d_range[1]:
+                        ix = value - d_range[0]
+                        value = s_range[0] + ix
                         break
-            if _does_seed_exist(loc):
+
+            # If this is a valid seed from the
+            if _does_seed_exist(value):
                 return init_loc
 
 
@@ -156,8 +150,8 @@ def part_two(stuff):
 
 
 def run(input_file):
-    stuff = get_input(input_file)
-    part_one(stuff)
+    almanac = get_input(input_file)
+    part_one(almanac)
 
-    stuff = get_input(input_file)
-    part_two(stuff)
+    almanac = get_input(input_file)
+    part_two(almanac)
