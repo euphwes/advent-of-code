@@ -26,6 +26,7 @@ def part_two(stuff):
 
 def run(input_file):
     stuff = get_input(input_file)
-
     part_one(stuff)
+
+    stuff = get_input(input_file)
     part_two(stuff)

@@ -1,9 +1,17 @@
 """ Module providing utility functions related to iteration. """
 
 
+def repeat_forever(iter1):
+    """A generator which yields values from a provided iterable indefinitely, starting back over
+    once the iterator is exhausted."""
+
+    while True:
+        yield from iter1
+
+
 def nested_iterable(iter1, iter2):
-    """ A generator for yielding pairs of values built from iterator over two iterables in a nested
-    for-loop fashion. """
+    """A generator for yielding pairs of values built from iterator over two iterables in a nested
+    for-loop fashion."""
 
     for a in iter1:
         for b in iter2:
@@ -11,8 +19,8 @@ def nested_iterable(iter1, iter2):
 
 
 def int_stream(start=0, end=None):
-    """ A generator yielding integers starting at `start`, continuing to (and including) `end`
-    if a value is provided. """
+    """A generator yielding integers starting at `start`, continuing to (and including) `end`
+    if a value is provided."""
 
     n = start
     while True:
@@ -23,7 +31,7 @@ def int_stream(start=0, end=None):
 
 
 def bidirectional_range(start, end, inclusive=False):
-    """ Implements a bidirectional range, optionally inclusive of the end point.
+    """Implements a bidirectional range, optionally inclusive of the end point.
 
     bidirectional_range(0, 3) = generator of (0, 1, 2)
     bidirectional_range(0, 3, inclusive=True) = generator of (0, 1, 2, 3)
