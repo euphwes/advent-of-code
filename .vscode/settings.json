@@ -3,12 +3,16 @@
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-        "source.organizeImports": true
+      "source.organizeImports": "explicit"
     },
 },
 "rewrap.autoWrap.enabled": true,
 "python.analysis.autoImportCompletions": true,
 "python.analysis.autoImportUserSymbols": true,
 "python.analysis.indexing": true,
-"isort.args":["--profile", "black"],
+"isort.args": [
+  "--profile",
+  "black"
+],
+"python.REPL.enableREPLSmartSend": false,
 }
