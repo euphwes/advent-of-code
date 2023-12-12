@@ -1,5 +1,7 @@
 """ Module providing utility functions related to iteration. """
 
+from typing import Collection, Iterable, Tuple
+
 
 def repeat_forever(iter1):
     """A generator which yields values from a provided iterable indefinitely, starting back over
@@ -65,3 +67,10 @@ def bidirectional_range(start, end, inclusive=False):
         while curr > end:
             yield curr
             curr -= 1
+
+
+def min_and_max(values: Iterable[int]) -> Tuple[int, int]:
+    """Returns a tuple of the min and max values in the provided iterable."""
+
+    values = set(values)
+    return min(values), max(values)
