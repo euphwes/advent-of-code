@@ -1,4 +1,3 @@
-from functools import lru_cache
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 
