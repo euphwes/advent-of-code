@@ -85,12 +85,49 @@ class AssemblyComputer:
         self.registers = {n: 0 for n in range(6)}
 
     def run(self):
+        while True:
+            if self.ip >= self.program_size:
+                return
+
+            if self.ip_register is not None:
+                self.registers[self.ip_register] = self.ip
+
+            # print(f"\n[{' '.join([str(x) for x in self.registers.values()])}]")
+            instruction = self.program[self.ip]
+            # print(f"{self.ip} {instruction}")
+            self.registers = instruction.execute(self.registers)
+            # print(f"[{' '.join([str(x) for x in self.registers.values()])}]")
+
+            if self.ip_register is not None:
+                self.ip = self.registers[self.ip_register] + 1
+
+
+class StepwiseAssemblyComputer:
+    def __init__(self, raw_program):
+        self.ip = 0
+        self.ip_register = None
+
+        # If the first line in a program is a declaration binding the IP
+        # to a register, remember which register. Ex: #ip 4
+        if raw_program[0].startswith("#"):
+            ip_bind_line = raw_program.pop(0)
+            self.ip_register = int(ip_bind_line.split(" ")[-1])
+
+        self.program = [
+            CompleteAssemblyInstruction.from_line(line) for line in raw_program
+        ]
+        self.program_size = len(self.program)
+
+        self.registers = {n: 0 for n in range(6)}
+
+    def run(self):
         c = 0
         while True:
             if self.ip >= self.program_size:
                 return
 
             c += 1
+            yield c, self.ip, self.registers
 
             if self.ip_register is not None:
                 self.registers[self.ip_register] = self.ip
