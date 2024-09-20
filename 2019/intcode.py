@@ -1,3 +1,7 @@
+from collections import defaultdict
+from operator import is_
+
+
 class InputNotAvailableException(BaseException):
     """An exception to indicate that an IntcodeComputer is attempting to read
     input but none is available."""
@@ -24,10 +28,12 @@ class IntcodeComputer:
     OPCODE_JIF = 6  # 6, <param1>, <param2>
     OPCODE_LESS = 7  # 7, <param1>, <param2>, <destination>
     OPCODE_EQUALS = 8  # 8, <param1>, <param2>, <destination>
+    OPCODE_ADJ_REL_BASE = 9  # 9, <param>
     OPCODE_HALT = 99
 
     PARAM_MODE_POSITION = 0
     PARAM_MODE_IMMEDIATE = 1
+    PARAM_MODE_RELATIVE = 2
 
     STATE_INIT = "init"  # computer initialized, not yet running
     STATE_RUNNING = "running"  # computer actively running program
@@ -42,6 +48,7 @@ class IntcodeComputer:
         OPCODE_JIF: 2,
         OPCODE_LESS: 3,
         OPCODE_EQUALS: 3,
+        OPCODE_ADJ_REL_BASE: 1,
     }
 
     def __init__(self):
@@ -53,6 +60,7 @@ class IntcodeComputer:
         self.instruction_ptr = 0
 
         self.state = IntcodeComputer.STATE_INIT
+        self.relative_base = 0
 
         self.opcode_map = {
             IntcodeComputer.OPCODE_ADD: self.enact_add,
@@ -63,10 +71,16 @@ class IntcodeComputer:
             IntcodeComputer.OPCODE_JIF: self.enact_jif,
             IntcodeComputer.OPCODE_LESS: self.enact_less_than,
             IntcodeComputer.OPCODE_EQUALS: self.enact_equals,
+            IntcodeComputer.OPCODE_ADJ_REL_BASE: self.enact_adjust_relative_base,
         }
 
     def execute(self, program, program_input=None):
         """Executes the provided program with the specified input."""
+
+        # Turn the program into a defaultdict of ints so that "memory" is
+        # effectively infinite; all memory addresses start with 0 value unless
+        # written to or specified in the initial program.
+        program = defaultdict(int, {i: v for i, v in enumerate(program)})
 
         # If the computer is currently waiting, that means it was previously
         # running. We only want to update the input to utilize the new input,
@@ -143,9 +157,10 @@ class IntcodeComputer:
         starting from the current address of the instruction pointer."""
 
         i = self.instruction_ptr
-        num_params = IntcodeComputer.OPCODE_NUM_PARAMS_MAP[opcode]
-
-        return self.program[i + 1 : i + 1 + num_params]
+        params = []
+        for j in range(IntcodeComputer.OPCODE_NUM_PARAMS_MAP[opcode]):
+            params.append(self.program[i + 1 + j])
+        return params
 
     def execute_instruction(self, opcode, param_modes):
         """Execute the instruction for the specified opcode."""
@@ -155,6 +170,19 @@ class IntcodeComputer:
 
         # Pair the parameters with their associated parameter mode.
         params_with_modes = [(p, param_modes[i]) for i, p in enumerate(params)]
+
+        # name = {
+        #     IntcodeComputer.OPCODE_ADD: "add",
+        #     IntcodeComputer.OPCODE_MULT: "mult",
+        #     IntcodeComputer.OPCODE_INPUT: "input",
+        #     IntcodeComputer.OPCODE_OUTPUT: "output",
+        #     IntcodeComputer.OPCODE_JIT: "jit",
+        #     IntcodeComputer.OPCODE_JIF: "jif",
+        #     IntcodeComputer.OPCODE_LESS: "less",
+        #     IntcodeComputer.OPCODE_EQUALS: "equals",
+        #     IntcodeComputer.OPCODE_ADJ_REL_BASE: "adj_rel_base",
+        # }[opcode]
+        # print(f"Executing opcode {opcode} {name} with params {params_with_modes}")
 
         return self.opcode_map[opcode](*params_with_modes)
 
@@ -169,14 +197,20 @@ class IntcodeComputer:
         return self.output_buffer.pop(0)
 
     def determine_param_value(self, param_id, param_mode):
-        """Return a parameter's value based on it's parameter mode.
+        """Return a parameter's value based on its parameter mode.
         For a param in immediate mode, it's the value itself.
         For a param in position mode, it's the value at the specified address."""
 
         if param_mode == IntcodeComputer.PARAM_MODE_IMMEDIATE:
             return param_id
 
-        return self.program[param_id]
+        elif param_mode == IntcodeComputer.PARAM_MODE_POSITION:
+            return self.program[param_id]
+
+        elif param_mode == IntcodeComputer.PARAM_MODE_RELATIVE:
+            return self.program[param_id + self.relative_base]
+
+        raise ValueError(f"param_mode {param_mode} is unknown")
 
     def enact_add(self, param1_with_mode, param2_with_mode, output_param):
         """Executes an ADD instruction."""
@@ -184,8 +218,12 @@ class IntcodeComputer:
         val1 = self.determine_param_value(*param1_with_mode)
         val2 = self.determine_param_value(*param2_with_mode)
 
-        # ignore parameter mode, we're writing here
-        output_idx = output_param[0]
+        output_val, output_mode = output_param
+        output_idx = (
+            output_val
+            if output_mode == IntcodeComputer.PARAM_MODE_POSITION
+            else output_val + self.relative_base
+        )
 
         self.program[output_idx] = val1 + val2
 
@@ -195,16 +233,17 @@ class IntcodeComputer:
         val1 = self.determine_param_value(*param1_with_mode)
         val2 = self.determine_param_value(*param2_with_mode)
 
-        # ignore parameter mode, we're writing here
-        output_idx = output_param[0]
+        output_val, output_mode = output_param
+        output_idx = (
+            output_val
+            if output_mode == IntcodeComputer.PARAM_MODE_POSITION
+            else output_val + self.relative_base
+        )
 
         self.program[output_idx] = val1 * val2
 
     def enact_input(self, target_param):
         """Executes an INPUT instruction."""
-
-        # Ignore parameter mode, we're writing here
-        target_idx = target_param[0]
 
         # If the input has already been provided, pop the next value from
         # list to use here. Otherwise raise an exception to indicate no
@@ -214,7 +253,14 @@ class IntcodeComputer:
         else:
             raise InputNotAvailableException()
 
-        self.program[target_idx] = input_value
+        output_val, output_mode = target_param
+        output_idx = (
+            output_val
+            if output_mode == IntcodeComputer.PARAM_MODE_POSITION
+            else output_val + self.relative_base
+        )
+
+        self.program[output_idx] = input_value
 
     def enact_output(self, param1_with_mode):
         """Executes an OUTPUT instruction."""
@@ -252,8 +298,12 @@ class IntcodeComputer:
         val1 = self.determine_param_value(*param1_with_mode)
         val2 = self.determine_param_value(*param2_with_mode)
 
-        # ignore parameter mode, we're writing here
-        output_idx = output_param[0]
+        output_val, output_mode = output_param
+        output_idx = (
+            output_val
+            if output_mode == IntcodeComputer.PARAM_MODE_POSITION
+            else output_val + self.relative_base
+        )
 
         self.program[output_idx] = 1 if val1 < val2 else 0
 
@@ -265,7 +315,17 @@ class IntcodeComputer:
         val1 = self.determine_param_value(*param1_with_mode)
         val2 = self.determine_param_value(*param2_with_mode)
 
-        # ignore parameter mode, we're writing here
-        output_idx = output_param[0]
+        output_val, output_mode = output_param
+        output_idx = (
+            output_val
+            if output_mode == IntcodeComputer.PARAM_MODE_POSITION
+            else output_val + self.relative_base
+        )
 
         self.program[output_idx] = 1 if val1 == val2 else 0
+
+    def enact_adjust_relative_base(self, param1_with_mode):
+        """Executes an ADJUST RELATIVE BASE instruction. The value of param1 is used to adjust
+        the current relative base."""
+
+        self.relative_base += self.determine_param_value(*param1_with_mode)
