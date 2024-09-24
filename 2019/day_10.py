@@ -1,6 +1,6 @@
 from collections import defaultdict
 from itertools import combinations
-from math import inf, atan, pi
+from math import atan2, pi
 
 from util.decorators import aoc_output_formatter
 from util.input import get_input
@@ -22,24 +22,10 @@ def _angle_between(ast1, ast2):
     dx = x2 - x1
     dy = y2 - y1
 
-    if dx == 0:
-        angle_degrees = 90 if y2 > y1 else 270
-    elif dy == 0:
-        angle_degrees = 0 if x2 > x1 else 180
-    else:
-        angle_degrees = atan(dy / dx) * (180 / pi)
-        if x2 < x1:
-            angle_degrees += 180
+    theta = atan2(dy, dx)
+    angle = ((theta) * (180 / pi) + 360) % 360
 
-    # We want "0" to be "up" so let's adjust everything downwards by 90 degrees.
-    # TODO why
-    angle_degrees -= 90
-
-    # Now bring everything back into the range 0-360
-    if angle_degrees < 0:
-        angle_degrees += 360
-
-    return angle_degrees
+    return angle
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
@@ -58,6 +44,7 @@ def part_one(asteroid_map):
         if ast1 == ast2:
             continue
         asteroid_angles[ast1][_angle_between(ast1, ast2)].append(ast2)
+        asteroid_angles[ast2][_angle_between(ast2, ast1)].append(ast1)
 
     from pprint import pprint
 
@@ -65,8 +52,9 @@ def part_one(asteroid_map):
     best_asteroid = None
 
     for asteroid, angle_dict in asteroid_angles.items():
-        # print(f"\nlooking at {asteroid}")
-        # pprint(dict(angle_dict))
+        if asteroid == (2, 2):
+            print(f"\nlooking at {asteroid}\n")
+            pprint(dict(angle_dict))
 
         ax, ay = asteroid
 
@@ -80,7 +68,9 @@ def part_one(asteroid_map):
             best_asteroid = asteroid
             best_count = curr_count
 
-    print(f"best asteroid is {best_asteroid}")
+        if asteroid == (2, 2):
+            print(f"found {curr_count}")
+
     return best_count
 
 
