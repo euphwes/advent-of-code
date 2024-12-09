@@ -1,6 +1,6 @@
 {
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.defaultFormatter": "charliermarsh.ruff",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
       "source.organizeImports": "explicit"
@@ -8,11 +8,6 @@
 },
 "rewrap.autoWrap.enabled": true,
 "python.analysis.autoImportCompletions": true,
-"python.analysis.autoImportUserSymbols": true,
 "python.analysis.indexing": true,
-"isort.args": [
-  "--profile",
-  "black"
-],
 "python.REPL.enableREPLSmartSend": false,
 }

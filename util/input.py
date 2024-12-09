@@ -1,20 +1,15 @@
-# Simple placeholder lambda which does nothing
-DO_NOTHING = lambda token: token
-
-# ----------------------------------------------------------------------------------------------
+from pathlib import Path
 
 
-def get_input(input_file):
-    """Returns the input from the specified file path, as a list of raw lines from the input
-    file with newlines removed."""
-
-    return [x.replace("\n", "") for x in open(input_file).readlines()]
+def get_input(input_file: str) -> list[str]:
+    """Return the contents of the specified file path."""
+    return list(Path(input_file).open())
 
 
 def get_input_grid_map(input_file):
     """Returns grid-based input from the specified file path, as a dictionary of (x, y)
-    coordinates to the element at that coordinate."""
-
+    coordinates to the element at that coordinate.
+    """
     raw_lines = get_input(input_file)
 
     input_map = dict()
@@ -25,7 +20,7 @@ def get_input_grid_map(input_file):
     return input_map
 
 
-def get_tokenized_input(input_file, split_str, transform=DO_NOTHING):
+def get_tokenized_input(input_file, split_str, transform=lambda x: x):
     """Returns the input for the specified AoC day, where each line is split by the supplied
     string and collected into a list of tokens, and the entire input is returned as a list of
     token lists. Optionally, the caller can supply a function to transform each token into a
@@ -34,8 +29,8 @@ def get_tokenized_input(input_file, split_str, transform=DO_NOTHING):
     Ex.
     1,2,3           [['1', '2', '3'],
     4,5,6  ------>   ['4', '5', '6'],
-    7,8,9            ['7', '8', '9']]"""
-
+    7,8,9            ['7', '8', '9']]
+    """
     tokenized = [line.split(split_str) for line in get_input(input_file)]
     transformed = [[transform(t) for t in line] for line in tokenized]
 
@@ -49,8 +44,8 @@ ACCEPTABLE_EVAL_CHARS = set("[],0123456789 ")
 def safe_eval(raw_line):
     """Returns the `eval` of the provided line if it contains any content. Ensures the operation
     is safe before performing `eval` by ensuring the line only has acceptable characters, so
-    we're not doing any os or sys calls, etc. Returns None if the line is empty."""
-
+    we're not doing any os or sys calls, etc. Returns None if the line is empty.
+    """
     if not raw_line:
         return None
 

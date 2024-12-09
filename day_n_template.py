@@ -2,7 +2,7 @@ from util.decorators import aoc_output_formatter
 from util.input import get_input
 
 DAY = 1
-YEAR = 2023
+YEAR = 2024
 
 PART_ONE_DESCRIPTION = ""
 PART_ONE_ANSWER = None
@@ -12,21 +12,15 @@ PART_TWO_ANSWER = None
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
-def part_one(stuff):
+def part_one(raw_input: list[str]) -> int | str | None:
     pass
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
-def part_two(stuff):
+def part_two(raw_input: list[str]) -> int | str | None:
     pass
 
 
-# ----------------------------------------------------------------------------------------------
-
-
-def run(input_file):
-    stuff = get_input(input_file)
-    part_one(stuff)
-
-    stuff = get_input(input_file)
-    part_two(stuff)
+def run(input_file: str) -> None:
+    part_one(get_input(input_file))
+    part_two(get_input(input_file))
