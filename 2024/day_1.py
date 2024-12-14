@@ -49,3 +49,80 @@ def part_two(raw_input: list[str]) -> int | str | None:
 def run(input_file: str) -> None:
     part_one(get_input(input_file))
     part_two(get_input(input_file))
+
+
+"""
+{
+    "python.venvFolders": [
+        "venvs"
+    ],
+
+    // Configure glob patterns for excluding files and folders. For example, the files
+    // explorer decides which files and folders to show or hide based on this setting.
+    // Read more about glob patterns
+    // [here](https://code.visualstudio.com/docs/editor/codebasics#_advanced-search-options).
+	"files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/__pycache__": true,
+        "**/.vscode": true,
+        "**/.classpath": true,
+        "**/.project": true,
+        "**/.settings": true,
+        "**/.factorypath": true
+    },
+    "editor.rulers": [
+
+        {
+          "column": 96,
+          "color": "#a3a3a32c"
+        },
+      ],
+    // "explorer.autoReveal": true,
+    "editor.suggestSelection": "first",
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true,
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true,
+    },
+    "[python]": {
+      "editor.formatOnType": true,
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "charliermarsh.ruff",
+      "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit",
+        "source.organizeImports": "explicit",
+      }
+    },
+    "rewrap.autoWrap.enabled": true,
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.indexing": true,
+    "python.analysis.pythonVersion": "3.13",
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportUnboundVariable": "warning",
+      },
+    "workbench.colorTheme": "Default Dark+",
+    "colorize.languages": [
+      "typescript",
+      "javascript",
+      "css",
+      "scss",
+      "typescriptreact"
+    ],
+}
+"""
+extensions = """
+colorize
+python
+pylance
+python debugger
+ruff
+"""
