@@ -1,8 +1,7 @@
+from itertools import combinations
+
 from util.decorators import aoc_output_formatter
 from util.input import get_input
-from util.structures import get_neighbors_of
-
-from itertools import combinations
 
 DAY = 12
 YEAR = 2024
@@ -28,7 +27,6 @@ def _neighbors(coord, grid):
 
 
 def _walk_region(loc, grid):
-
     target_char = grid[loc]
 
     region = {loc}
@@ -48,7 +46,6 @@ def _walk_region(loc, grid):
             if n in visited:
                 continue
             queue.append(n)
-
 
     return region
 
@@ -94,8 +91,7 @@ def _score_region(region, grid):
                 rperim -= 1
         perim += rperim
 
-    return area*perim
-
+    return area * perim
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
@@ -110,32 +106,31 @@ def _get_perimeter_groups(region, foochar):
 
     for lx, ly in region:
         # check above neighbor
-        if (lx, ly-1) not in region:
-            perimeter_sub_points.append((lx, ly, 'u'))
-            perimeter_sub_points.append((lx+1, ly, 'u'))
+        if (lx, ly - 1) not in region:
+            perimeter_sub_points.append((lx, ly, "u"))
+            perimeter_sub_points.append((lx + 1, ly, "u"))
 
         # check right neighbor
-        if (lx+1, ly) not in region:
-            perimeter_sub_points.append((lx+1, ly, 'r'))
-            perimeter_sub_points.append((lx+1, ly+1, 'r'))
+        if (lx + 1, ly) not in region:
+            perimeter_sub_points.append((lx + 1, ly, "r"))
+            perimeter_sub_points.append((lx + 1, ly + 1, "r"))
 
         # check below neighbor
-        if (lx, ly+1) not in region:
-            perimeter_sub_points.append((lx, ly+1, 'd'))
-            perimeter_sub_points.append((lx+1, ly+1, 'd'))
+        if (lx, ly + 1) not in region:
+            perimeter_sub_points.append((lx, ly + 1, "d"))
+            perimeter_sub_points.append((lx + 1, ly + 1, "d"))
 
         # check left neighbor
-        if (lx-1, ly) not in region:
-            perimeter_sub_points.append((lx, ly, 'l'))
-            perimeter_sub_points.append((lx, ly+1, 'l'))
-
+        if (lx - 1, ly) not in region:
+            perimeter_sub_points.append((lx, ly, "l"))
+            perimeter_sub_points.append((lx, ly + 1, "l"))
 
     # all the points of all perimeters are in perimeter_sub_points
     # need to group them into separate perimeter groups
 
     def _is_adjacent(p1, p2):
-        dx = abs(p1[0]-p2[0])
-        dy = abs(p1[1]-p2[1])
+        dx = abs(p1[0] - p2[0])
+        dy = abs(p1[1] - p2[1])
         return dx + dy == 1
 
     perimeter_groups = []
@@ -154,7 +149,6 @@ def _get_perimeter_groups(region, foochar):
         if not did_add:
             perimeter_groups.append(set([point]))
 
-
     while True:
         did_merge = False
         for group_a, group_b in combinations(perimeter_groups, 2):
@@ -165,8 +159,7 @@ def _get_perimeter_groups(region, foochar):
                 break
         if not did_merge:
             break
-        else:
-            perimeter_groups = [p for p in perimeter_groups if p]
+        perimeter_groups = [p for p in perimeter_groups if p]
 
     # print(f'\nGroups in region with char {foochar}')
     # for i, p in enumerate(perimeter_groups):
@@ -182,11 +175,11 @@ def _expand_region(region, grid):
     minx, maxx = min(c[0] for c in grid.keys()), max(c[0] for c in grid.keys())
     miny, maxy = min(c[1] for c in grid.keys()), max(c[1] for c in grid.keys())
 
-    for y in range(miny, maxy+1):
-        line = ''
-        for x in range(minx, maxx+1):
+    for y in range(miny, maxy + 1):
+        line = ""
+        for x in range(minx, maxx + 1):
             for _ in range(2):
-                line += target_char if (x,y) in region else '.'
+                line += target_char if (x, y) in region else "."
         new_grid.append(line)
         new_grid.append(line)
 
@@ -198,14 +191,14 @@ def _expand_region(region, grid):
     for y, line in enumerate(new_grid):
         for x, char in enumerate(line):
             if char == target_char:
-                expanded_region.add((x,y))
+                expanded_region.add((x, y))
 
     return expanded_region
 
 
 def _is_adjacent(p1, p2):
-    dx = abs(p1[0]-p2[0])
-    dy = abs(p1[1]-p2[1])
+    dx = abs(p1[0] - p2[0])
+    dy = abs(p1[1] - p2[1])
     return dx + dy == 1
 
 
@@ -214,15 +207,14 @@ def _matches(ptest, segtest):
         return False
     # it's adjacent to at least 1 in the segment
     # now check if it's inline with all in the segment
-    if {ptest[0]} == {x for x,_,_ in segtest} and {ptest[2]} == {d for _,_,d in segtest}:
+    if {ptest[0]} == {x for x, _, _ in segtest} and {ptest[2]} == {d for _, _, d in segtest}:
         return True
-    if {ptest[1]} == {y for _,y,_ in segtest} and {ptest[2]} == {d for _,_,d in segtest}:
+    if {ptest[1]} == {y for _, y, _ in segtest} and {ptest[2]} == {d for _, _, d in segtest}:
         return True
     return False
 
 
 def _build_segment(group):
-
     # pick any arbitrary point
     segment = [group.pop()]
 
@@ -241,8 +233,6 @@ def _build_segment(group):
             break
 
     return segment, group
-
-
 
 
 def _count_line_segments(group):
@@ -270,8 +260,7 @@ def _count_line_segments(group):
 
 
 def _count_sides(region, grid):
-    """
-    AAAAAA
+    """AAAAAA
     AAABBA
     AAABBA
     ABBAAA
@@ -302,7 +291,6 @@ def _score_region_v2(region, grid):
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(stuff):
-
     grid = _parse_map(stuff)
     regions = _parse_regions(grid)
     return sum(_score_region_v2(region, grid) for region in regions)

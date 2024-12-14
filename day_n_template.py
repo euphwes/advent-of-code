@@ -1,8 +1,8 @@
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 
-DAY = 1
-YEAR = 2024
+DAY = "REPLACE_ME"
+YEAR = "REPLACE_ME"
 
 PART_ONE_DESCRIPTION = ""
 PART_ONE_ANSWER = None

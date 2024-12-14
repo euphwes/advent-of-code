@@ -1,12 +1,10 @@
 from collections import defaultdict
-from operator import is_
 
 
 class InputNotAvailableException(BaseException):
     """An exception to indicate that an IntcodeComputer is attempting to read
-    input but none is available."""
-
-    pass
+    input but none is available.
+    """
 
 
 class IntcodeComputer:
@@ -54,8 +52,8 @@ class IntcodeComputer:
     def __init__(self):
         """Initializes an Intcode computer. Sets the instruction pointer to
         address 0, and establishes some maps defining which action to take for
-        any given opcode."""
-
+        any given opcode.
+        """
         self.output_buffer = list()
         self.instruction_ptr = 0
 
@@ -76,7 +74,6 @@ class IntcodeComputer:
 
     def execute(self, program, program_input=None):
         """Executes the provided program with the specified input."""
-
         # Turn the program into a defaultdict of ints so that "memory" is
         # effectively infinite; all memory addresses start with 0 value unless
         # written to or specified in the initial program.
@@ -103,7 +100,6 @@ class IntcodeComputer:
 
         # Continue until we find the HALT opcode
         while opcode != IntcodeComputer.OPCODE_HALT:
-
             try:
                 # Execute the current opcode
                 skip_advance_instruction_ptr = self.execute_instruction(opcode, modes)
@@ -117,9 +113,7 @@ class IntcodeComputer:
             if not skip_advance_instruction_ptr:
                 # Advance the instruction pointer by the number of parameters used
                 # by the previous instruction
-                self.instruction_ptr += (
-                    IntcodeComputer.OPCODE_NUM_PARAMS_MAP[opcode] + 1
-                )
+                self.instruction_ptr += IntcodeComputer.OPCODE_NUM_PARAMS_MAP[opcode] + 1
 
             # Retrieve the next opcode and param modes
             opcode, modes = self.get_opcode_and_param_modes()
@@ -134,7 +128,6 @@ class IntcodeComputer:
                     B - param2 mode
                     A - param3 mode
         """
-
         # Retrieve the raw opcode, interpret as a string and left-pad with
         # zeroes until it's 5 digits in length. Facilitates determining
         # parameter mode for up to 3 parameters.
@@ -154,8 +147,8 @@ class IntcodeComputer:
 
     def get_parameters_for_opcode(self, opcode):
         """Retrieves the parameters from the program for a given opcode,
-        starting from the current address of the instruction pointer."""
-
+        starting from the current address of the instruction pointer.
+        """
         i = self.instruction_ptr
         params = []
         for j in range(IntcodeComputer.OPCODE_NUM_PARAMS_MAP[opcode]):
@@ -164,7 +157,6 @@ class IntcodeComputer:
 
     def execute_instruction(self, opcode, param_modes):
         """Execute the instruction for the specified opcode."""
-
         # Retrieve the parameters for the specified opcode
         params = self.get_parameters_for_opcode(opcode)
 
@@ -188,33 +180,30 @@ class IntcodeComputer:
 
     def has_output(self):
         """Returns whether or not there is any output remaining."""
-
         return bool(self.output_buffer)
 
     def get_output(self):
         """Returns from the output buffer."""
-
         return self.output_buffer.pop(0)
 
     def determine_param_value(self, param_id, param_mode):
         """Return a parameter's value based on its parameter mode.
         For a param in immediate mode, it's the value itself.
-        For a param in position mode, it's the value at the specified address."""
-
+        For a param in position mode, it's the value at the specified address.
+        """
         if param_mode == IntcodeComputer.PARAM_MODE_IMMEDIATE:
             return param_id
 
-        elif param_mode == IntcodeComputer.PARAM_MODE_POSITION:
+        if param_mode == IntcodeComputer.PARAM_MODE_POSITION:
             return self.program[param_id]
 
-        elif param_mode == IntcodeComputer.PARAM_MODE_RELATIVE:
+        if param_mode == IntcodeComputer.PARAM_MODE_RELATIVE:
             return self.program[param_id + self.relative_base]
 
         raise ValueError(f"param_mode {param_mode} is unknown")
 
     def enact_add(self, param1_with_mode, param2_with_mode, output_param):
         """Executes an ADD instruction."""
-
         val1 = self.determine_param_value(*param1_with_mode)
         val2 = self.determine_param_value(*param2_with_mode)
 
@@ -229,7 +218,6 @@ class IntcodeComputer:
 
     def enact_mult(self, param1_with_mode, param2_with_mode, output_param):
         """Executes a MULT instruction."""
-
         val1 = self.determine_param_value(*param1_with_mode)
         val2 = self.determine_param_value(*param2_with_mode)
 
@@ -244,14 +232,13 @@ class IntcodeComputer:
 
     def enact_input(self, target_param):
         """Executes an INPUT instruction."""
-
         # If the input has already been provided, pop the next value from
         # list to use here. Otherwise raise an exception to indicate no
         # input is available.
         if self.program_input:
             input_value = self.program_input.pop(0)
         else:
-            raise InputNotAvailableException()
+            raise InputNotAvailableException
 
         output_val, output_mode = target_param
         output_idx = (
@@ -264,14 +251,13 @@ class IntcodeComputer:
 
     def enact_output(self, param1_with_mode):
         """Executes an OUTPUT instruction."""
-
         output_value = self.determine_param_value(*param1_with_mode)
         self.output_buffer.append(output_value)
 
     def enact_jit(self, param1_with_mode, param2_with_mode):
         """Executes a JUMP IF TRUE instruction. If the value of param1
-        is non-zero, set the instruction point to the value of param2."""
-
+        is non-zero, set the instruction point to the value of param2.
+        """
         val1 = self.determine_param_value(*param1_with_mode)
         val2 = self.determine_param_value(*param2_with_mode)
 
@@ -281,8 +267,8 @@ class IntcodeComputer:
 
     def enact_jif(self, param1_with_mode, param2_with_mode):
         """Executes a JUMP IF FALSE instruction. If the value of param1
-        is zero, set the instruction point to the value of param2."""
-
+        is zero, set the instruction point to the value of param2.
+        """
         val1 = self.determine_param_value(*param1_with_mode)
         val2 = self.determine_param_value(*param2_with_mode)
 
@@ -293,8 +279,8 @@ class IntcodeComputer:
     def enact_less_than(self, param1_with_mode, param2_with_mode, output_param):
         """Executes a LESS THAN instruction. If the value of param1 is less
         than the value of param2, store 1 at the address given by output_param,
-        otherwise store 0."""
-
+        otherwise store 0.
+        """
         val1 = self.determine_param_value(*param1_with_mode)
         val2 = self.determine_param_value(*param2_with_mode)
 
@@ -310,8 +296,8 @@ class IntcodeComputer:
     def enact_equals(self, param1_with_mode, param2_with_mode, output_param):
         """Executes an EQUALS instruction. If the value of param1 is equal
         to the value of param2, store 1 at the address given by output_param,
-        otherwise store 0."""
-
+        otherwise store 0.
+        """
         val1 = self.determine_param_value(*param1_with_mode)
         val2 = self.determine_param_value(*param2_with_mode)
 
@@ -326,6 +312,6 @@ class IntcodeComputer:
 
     def enact_adjust_relative_base(self, param1_with_mode):
         """Executes an ADJUST RELATIVE BASE instruction. The value of param1 is used to adjust
-        the current relative base."""
-
+        the current relative base.
+        """
         self.relative_base += self.determine_param_value(*param1_with_mode)
