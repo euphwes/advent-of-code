@@ -86,55 +86,51 @@ def _print_robots(robots: list[Robot], ixx: int, x_size: int, y_size: int) -> No
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(raw_input: list[str]) -> int | str | None:
-    # x_size = 11
-    # y_size = 7
     x_size = 101
     y_size = 103
-    max_x = x_size - 1
-    max_y = y_size - 1
     robots = _parse_robots(raw_input)
 
     hit_count = 0
-    max_hits = 500
+    max_hits = 100
 
-    expected_empty_coords = {(x, y) for x in range(12) for y in range(12)}
+    def _check(bots):
+        # populate a set with the locations of all the robots
+        locations = set()
+        for r in robots:
+            locations.add((r.x, r.y))
 
-    def _all_empty(bots: list[Robot]) -> bool:
+        any_found = False
         for r in bots:
-            if (r.x, r.y) in expected_empty_coords:
-                return False
-        return True
+            disproved_diagonal = False
+            x = r.x
+            y = r.y
+            for _ in range(4):
+                x += 1
+                y -= 1
+                if (x, y) in locations:
+                    continue
+                else:
+                    disproved_diagonal = True
+                    break
+            if not disproved_diagonal:
+                any_found = True
+                break
+        return any_found
+
 
     for ixx in int_stream(1):
         for r in robots:
             r.x = (r.x + r.dx) % x_size
             r.y = (r.y + r.dy) % y_size
 
-        # count number of robots in each quadrant
-        quadrants = [0, 0, 0, 0]
-        for r in robots:
-            if r.x == max_x // 2 or r.y == max_y // 2:
-                continue
-            if r.x < max_x // 2 and r.y < max_y // 2:
-                quadrants[0] += 1
-            elif r.x < max_x // 2 and r.y > max_y // 2:
-                quadrants[1] += 1
-            elif r.x >= max_x // 2 and r.y < max_y // 2:
-                quadrants[2] += 1
-            else:
-                quadrants[3] += 1
-
         # if quadrants[0] == quadrants[2] and quadrants[1] == quadrants[3]:
-        # if _all_empty(robots):
-        if ixx >= 350:
-            # return ixx
-            # if True:
+        # if ixx >= 350:
+        # return ixx
+        if _check(robots):
             _print_robots(robots, ixx, x_size, y_size)
             hit_count += 1
             if hit_count == max_hits:
                 return None
-
-    raise ValueError("No solution found")
 
 
 def run(input_file: str) -> None:
