@@ -3,7 +3,7 @@ from pathlib import Path
 
 def get_input(input_file: str) -> list[str]:
     """Return the contents of the specified file path."""
-    return list(Path(input_file).open())
+    return [line.replace("\n", "") for line in Path(input_file).open()]
 
 
 def get_input_grid_map(input_file):
