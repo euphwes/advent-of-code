@@ -1,4 +1,5 @@
 from heapq import heappush, heappop
+from hmac import new
 from itertools import pairwise
 from util.decorators import aoc_output_formatter
 from util.input import get_input
@@ -98,79 +99,57 @@ def part_two(raw_input: list[str]) -> int | str | None:
 
     # --------
 
-    # state is (cost up to this point, coord, curr_direction)
+    # state is (cost up to this point, coord, curr_direction, path_to_this_point)
+    # path_to_this_point is list of (cost, coord, direction)
 
     visited = set()
     queue = []
-    heappush(queue, (0, start, 'E'))
+    heappush(queue, (0, start, 'E', [(0, start, 'E')]))
 
-    best_cost = None
+    solutions = []
 
     while queue:
-        cost, curr, curr_dir  = heappop(queue)
+        cost, curr, curr_dir, path  = heappop(queue)
         visited.add((curr, curr_dir))
         if curr == end:
-            best_cost = cost
-            break
+            solutions.append((cost, path))
+            continue
 
         for ncoord, ndir in _neighbors(curr, grid, curr_dir):
+
             if (ncoord, ndir) in visited:
                 continue
+
+            # if ncoord in set(x[1] for x in path):
+            #     continue
+
+            # new_path = path.copy() + [(cost, ncoord, ndir)]
+
             if ncoord == curr and ndir != curr_dir:
-                heappush(queue, (cost + 1000, ncoord, ndir))
+                heappush(queue, (cost + 1000, ncoord, ndir, path.copy() + [(cost + 1000, ncoord, ndir)]))
             elif ncoord != curr and ndir == curr_dir:
-                heappush(queue, ((cost + 1, ncoord, ndir)))
+                heappush(queue, ((cost + 1, ncoord, ndir, path.copy() + [(cost + 1, ncoord, ndir)])))
             else:
                 raise ValueError(f'Invalid state: {curr=}, {curr_dir=}, {ncoord=}, {ndir=}')
 
-    assert best_cost is not None
-    print(f'Best cost: {best_cost}')
+    best_cost = min(solutions, key=lambda x: x[0])[0]
 
-    # ---------------
+    distinct_cells = set()
 
-    del visited
+    for cost, path in solutions:
+        if cost == best_cost:
+            for _, coord, _ in path:
+                distinct_cells.add(coord)
 
-    # dfs to find all paths leading to the end
-    def _walk(coord, curr_direction, visited):
-        if (coord, curr_direction) in visited:
-            return []
-
-        visited.add((coord, curr_direction))
-
-        if coord == end:
-            return [[(coord, curr_direction)]]
-
-        possible_paths = list()
-
-        for ncoord, ndir in _neighbors(coord, grid, curr_direction):
-            for path in _walk(ncoord, ndir, visited):
-                possible_paths.append([(coord, curr_direction)] + path)
-
-        return possible_paths
-
-
-    all_paths = _walk(start, 'E', set())
-    print(f'Found {len(all_paths)} paths')
-
-    def _get_score(path):
-        score = 0
-        for c1, c2 in pairwise(path):
-            if c1[0] == c2[0]:
-                score += 1
+    for y, line in enumerate(raw_input):
+        for x, char in enumerate(line):
+            if (x, y) in distinct_cells:
+                print('O', end='')
             else:
-                score += 1000
-        print(f'Path: {path} has score {score}')
-        return score
+                print(char, end='')
+        print()
 
-    cells_on_best_paths = set()
-
-    for path in all_paths:
-        if _get_score(path) == best_cost:
-            print(f'HIT found another path with score {best_cost}')
-            for cell in path:
-                cells_on_best_paths.add(cell)
-
-    return len(cells_on_best_paths)
+    return len(distinct_cells)
 
 
 def run(input_file: str) -> None:
