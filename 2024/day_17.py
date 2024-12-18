@@ -1,6 +1,8 @@
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 
+from .computer import Computer
+
 DAY = 17
 YEAR = 2024
 
@@ -13,7 +15,12 @@ PART_TWO_ANSWER = None
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(raw_input: list[str]) -> int | str | None:
-    pass
+    computer = Computer(
+        program=[0, 1, 5, 4, 3, 0],
+        initial_registers={"A": 2024, "B": 0, "C": 0},
+    )
+
+    return ",".join([str(n) for n in computer.execute()])
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)

@@ -109,14 +109,12 @@ def part_two(raw_input: list[str]) -> int | str | None:
                 y -= 1
                 if (x, y) in locations:
                     continue
-                else:
-                    disproved_diagonal = True
-                    break
+                disproved_diagonal = True
+                break
             if not disproved_diagonal:
                 any_found = True
                 break
         return any_found
-
 
     for ixx in int_stream(1):
         for r in robots:

@@ -1,3 +1,5 @@
+from itertools import pairwise
+
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 
@@ -11,11 +13,6 @@ PART_TWO_DESCRIPTION = ""
 PART_TWO_ANSWER = None
 
 
-def pairwise(myiter):
-    for x in range(len(myiter) - 1):
-        yield myiter[x], myiter[x + 1]
-
-
 def is_safe(line):
     diffs = []
     for n1, n2 in pairwise(line):
@@ -23,9 +20,7 @@ def is_safe(line):
         diff = abs(n1 - n2)
         if not (diff >= 1 and diff <= 3):
             return False
-    if all(x > 0 for x in diffs):
-        return True
-    elif all(x < 0 for x in diffs):
+    if all(x > 0 for x in diffs) or all(x < 0 for x in diffs):
         return True
     return False
 
