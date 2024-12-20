@@ -29,23 +29,6 @@ def _neighbors(coord, grid):
     return neighbors
 
 
-def _is_cheatable_wall(coord, grid):
-    """Returns true if the provided coord is a wall which is framed by open
-    space on either left and right, or above and below.
-    """
-
-    x, y = coord
-    if grid[(x, y)] != "#":
-        return False
-
-    if grid.get((x - 1, y), "#") != "#" and grid.get((x + 1, y), "#") != "#":
-        return True
-    if grid.get((x, y - 1), "#") != "#" and grid.get((x, y + 1), "#") != "#":
-        return True
-
-    return False
-
-
 def _parse_maze(raw_input: list[str]) -> dict[tuple[int, int], str]:
     maze = {}
     for y, line in enumerate(raw_input):
@@ -61,6 +44,7 @@ def part_one(raw_input: list[str]) -> int | str | None:
     end = next(coord for coord, char in maze.items() if char == "E")
 
     best_cost = None
+    distance_to_coord = dict()
 
     # queue state is (cost, coord)
     queue = [(0, start)]
@@ -72,6 +56,7 @@ def part_one(raw_input: list[str]) -> int | str | None:
         if coord in visited:
             continue
         visited.add(coord)
+        distance_to_coord[coord] = cost
 
         if coord == end:
             best_cost = cost
@@ -83,41 +68,51 @@ def part_one(raw_input: list[str]) -> int | str | None:
             queue.append((cost + 1, neighbor))
 
     assert best_cost is not None
+    # print(f"Best cost: {best_cost}")
 
-    cheatable_wall_coords = [coord for coord in maze if _is_cheatable_wall(coord, maze)]
+    cheat_starts = set()
+    for coord, char in maze.items():
+        if char in "E#":
+            continue
+        cheat_starts.add(coord)
+
+    cheats = []
+    for cheat_start in cheat_starts:
+        for cheat_end in _get_all_coords_at_manhattan_distance(
+            cheat_start,
+            maze,
+            2,
+        ):
+            cheats.append((cheat_start, cheat_end, 2))
+
     time_savings = defaultdict(set)
 
-    for cheat in cheatable_wall_coords:
+    for cheat in cheats:
+        cheat_start, cheat_end, cheat_delta = cheat
         cheat_best_cost = None
 
-        maze_copy = maze.copy()
-        maze_copy[cheat] = "."
+        # time to get to the "cheat_end" is the minimum of:
+        #    - time to go straight there from the start (via distance_to_coord)
+        #    - time to go there via the "cheat_start" (via distance_to_coord) + delta_cheat
+        arrive_at_cheat_end = min(
+            [
+                distance_to_coord[cheat_end],
+                distance_to_coord[cheat_start] + cheat_delta,
+            ],
+        )
 
-        queue = []
-        heappush(queue, (0, start))
-        visited = set()
+        if arrive_at_cheat_end == distance_to_coord[cheat_end]:
+            continue
 
-        while queue:
-            cost, coord = heappop(queue)
+        time_remaining = best_cost - distance_to_coord[cheat_end]
+        savings = arrive_at_cheat_end - time_remaining
 
-            if coord in visited:
-                continue
-            visited.add(coord)
+        time_savings[savings].add(cheat)
 
-            if coord == end:
-                cheat_best_cost = cost
-                break
-
-            for neighbor in _neighbors(coord, maze_copy):
-                if neighbor in visited:
-                    continue
-                heappush(queue, (cost + 1, neighbor))
-
-        assert cheat_best_cost is not None
-        time_savings[best_cost - cheat_best_cost].add(cheat)
-
-    # for savings, coords in time_savings.items():
-    #     print(f"Savings: {savings}, num cheats: {len(coords)}")
+    # iterate over, ordered by increasing savings
+    sorted_savings = [s for s in sorted(time_savings.keys())]
+    for s in sorted_savings:
+        print(f"There are {len(time_savings[s])} cheats that save {s} picoseconds")
 
     num_options_gte_100 = sum(
         len(coords) for savings, coords in time_savings.items() if savings >= 100
@@ -269,10 +264,10 @@ def part_two(raw_input: list[str]) -> int | str | None:
         assert cheat_best_cost is not None
         time_savings[best_cost - cheat_best_cost].add(cheat)
 
-    # # iterate over, ordered by increasing savings
-    # sorted_savings = [s for s in sorted(time_savings.keys()) if s >= 50]
-    # for s in sorted_savings:
-    #     print(f"There are {len(time_savings[s])} cheats that save {s} picoseconds")
+    # iterate over, ordered by increasing savings
+    sorted_savings = [s for s in sorted(time_savings.keys()) if s >= 50]
+    for s in sorted_savings:
+        print(f"There are {len(time_savings[s])} cheats that save {s} picoseconds")
 
     num_options_gte_100 = sum(
         len(coords) for savings, coords in time_savings.items() if savings >= 100
@@ -282,4 +277,4 @@ def part_two(raw_input: list[str]) -> int | str | None:
 
 def run(input_file: str) -> None:
     part_one(get_input(input_file))
-    part_two(get_input(input_file))
+    # part_two(get_input(input_file))
