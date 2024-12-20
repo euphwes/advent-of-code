@@ -74,6 +74,36 @@ def _ways_to_make_design(
     return combos
 
 
+@cache
+def _ways_to_make_design_v2(
+    design: str,
+    towel_patterns: frozenset[str],
+) -> int:
+    # print(f'ways_to_make_design("{design}")')
+    if not _is_valid_design(design, towel_patterns):
+        return 0
+
+    combos = 0
+    if design in towel_patterns:
+        combos += 1
+
+    for i in range(1, len(design)):
+        left = design[:i]
+        right = design[i:]
+
+        if not _is_valid_design(left, towel_patterns):
+            continue
+        if not _is_valid_design(right, towel_patterns):
+            continue
+
+        left_combos = _ways_to_make_design_v2(left, towel_patterns)
+        right_combos = _ways_to_make_design_v2(right, towel_patterns)
+
+        combos += left_combos * right_combos
+
+    return combos
+
+
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
 def part_one(raw_input: list[str]) -> int | str | None:
     towel_patterns = _parse_towel_patterns(raw_input)
@@ -90,7 +120,7 @@ def part_two(raw_input: list[str]) -> int | str | None:
     try:
         for design in designs:
             # print(f"\n NEW LINE {design}")
-            foo += len(_ways_to_make_design(design, towel_patterns))
+            foo += _ways_to_make_design_v2(design, towel_patterns)
         # capture ctrl-c
     except KeyboardInterrupt:
         pass
