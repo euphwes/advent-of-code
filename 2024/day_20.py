@@ -1,5 +1,7 @@
 from collections import defaultdict
+from heapq import heappop, heappush
 
+from util.algs import manhattan_distance
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 
@@ -91,11 +93,12 @@ def part_one(raw_input: list[str]) -> int | str | None:
         maze_copy = maze.copy()
         maze_copy[cheat] = "."
 
-        queue = [(0, start)]
+        queue = []
+        heappush(queue, (0, start))
         visited = set()
 
         while queue:
-            cost, coord = queue.pop(0)
+            cost, coord = heappop(queue)
 
             if coord in visited:
                 continue
@@ -108,10 +111,13 @@ def part_one(raw_input: list[str]) -> int | str | None:
             for neighbor in _neighbors(coord, maze_copy):
                 if neighbor in visited:
                     continue
-                queue.append((cost + 1, neighbor))
+                heappush(queue, (cost + 1, neighbor))
 
         assert cheat_best_cost is not None
         time_savings[best_cost - cheat_best_cost].add(cheat)
+
+    # for savings, coords in time_savings.items():
+    #     print(f"Savings: {savings}, num cheats: {len(coords)}")
 
     num_options_gte_100 = sum(
         len(coords) for savings, coords in time_savings.items() if savings >= 100
@@ -120,6 +126,23 @@ def part_one(raw_input: list[str]) -> int | str | None:
 
 
 # -=============================================
+
+
+def _neighbors_with_cheat(coord, grid, cheat) -> list[tuple[tuple[int, int], int]]:
+    neighbors = list()
+
+    cx, cy = coord
+    for neighbor_coord in [(cx, cy + 1), (cx, cy - 1), (cx + 1, cy), (cx - 1, cy)]:
+        if neighbor_coord not in grid:
+            continue
+        if grid[neighbor_coord] == "#":
+            continue
+        neighbors.append((neighbor_coord, 1))
+
+    if coord == cheat[0]:
+        neighbors.append((cheat[1], manhattan_distance(coord, cheat[1])))
+
+    return neighbors
 
 
 def _get_all_coords_at_manhattan_distance(coord, grid, distance):
@@ -167,7 +190,7 @@ def _get_all_coords_at_manhattan_distance(coord, grid, distance):
 
     candidates.add((x, y))
 
-    return [coord for coord in candidates if coord in grid]
+    return [coord for coord in candidates if coord in grid and grid[coord] != "#"]
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
@@ -199,58 +222,57 @@ def part_two(raw_input: list[str]) -> int | str | None:
             queue.append((cost + 1, neighbor))
 
     assert best_cost is not None
+    # print(f"Best cost: {best_cost}")
 
     cheat_starts = set()
-    for coord, char in maze.items():
-        if char == "#":
-            cheat_starts.add(coord)
+    for coord in maze:
+        cheat_starts.add(coord)
 
     CHEAT_LEN = 20
     cheats = []
     for cheat_start in cheat_starts:
-        for cheat_end in _get_all_coords_at_manhattan_distance(
-            cheat_start,
-            maze,
-            CHEAT_LEN - 1,
-        ):
-            cheats.append((cheat_start, cheat_end))
+        for clen in range(2, CHEAT_LEN):
+            for cheat_end in _get_all_coords_at_manhattan_distance(
+                cheat_start,
+                maze,
+                clen,
+            ):
+                cheats.append((cheat_start, cheat_end))
 
     time_savings = defaultdict(set)
 
     for cheat in cheats:
-        cheat_start, cheat_end = cheat
         cheat_best_cost = None
 
         maze_copy = maze.copy()
 
-        for x in range(cheat_start[0], cheat_end[0] + 1):
-            for y in range(cheat_start[1], cheat_end[1] + 1):
-                maze_copy[(x, y)] = "."
-
-        queue = [(0, start)]
+        queue = []
+        heappush(queue, (0, start))
         visited = set()
 
         while queue:
-            cost, coord = queue.pop(0)
-
+            cost, coord = heappop(queue)
             if coord in visited:
                 continue
+
             visited.add(coord)
 
             if coord == end:
                 cheat_best_cost = cost
                 break
 
-            for neighbor in _neighbors(coord, maze_copy):
+            for neighbor, delta_cost in _neighbors_with_cheat(coord, maze_copy, cheat):
                 if neighbor in visited:
                     continue
-                queue.append((cost + 1, neighbor))
+                heappush(queue, (cost + delta_cost, neighbor))
 
         assert cheat_best_cost is not None
         time_savings[best_cost - cheat_best_cost].add(cheat)
 
-    for savings, coords in time_savings.items():
-        print(f"Savings: {savings}, num cheats: {len(coords)}")
+    # # iterate over, ordered by increasing savings
+    # sorted_savings = [s for s in sorted(time_savings.keys()) if s >= 50]
+    # for s in sorted_savings:
+    #     print(f"There are {len(time_savings[s])} cheats that save {s} picoseconds")
 
     num_options_gte_100 = sum(
         len(coords) for savings, coords in time_savings.items() if savings >= 100
