@@ -95,15 +95,15 @@ DIRECTIONAL_KEYPAD_GRAPH = {
 def _get_keypad_direction_chart(keypad):
     directions = defaultdict(dict)
 
-    for start_key in keypad.keys():
-        for end_key in keypad.keys():
+    for start_key in keypad:
+        for end_key in keypad:
             if start_key == end_key:
                 directions[start_key][end_key] = ""
                 continue
 
             visited = set()
 
-            # queue is a list of (distance, key, path)
+            # queue is a list of (distance, num_dir_changes, key, path)
             queue = []
             heappush(queue, (0, start_key, ""))
 
@@ -114,21 +114,50 @@ def _get_keypad_direction_chart(keypad):
                 visited.add(key)
 
                 if key == end_key:
-                    foo = path
-                    bar = "".join(sorted(path))
-                    if foo != bar:
-                        print(f"directions[{start_key}][{end_key}]")
-                        print(f"first option: {foo}")
-                        print(f"second option: {bar}")
+                    # >>> sorted('^><v')
+                    # ['<', '>', '^', 'v']
+                    min_dir_changes_path = "".join(sorted(path))
 
-                    directions[start_key][end_key] = "".join(sorted(path))
+                    # if we're in the 1,4,7 column, we need to go right before going down
+                    if start_key in "147" and end_key in "0A":
+                        # print(
+                        #     f"\nstart: {start_key}, end: {end_key}, path: {min_dir_changes_path}",
+                        # )
+                        pass
+                        # shouldn't need to change anything
+
+                    # if we're in 0,A and going to 1,4,7, need to go up before going left
+                    elif start_key in "0A" and end_key in "147":
+                        # print(
+                        #     f"\nstart: {start_key}, end: {end_key}, path: {min_dir_changes_path}",
+                        # )
+                        # reverse path
+                        min_dir_changes_path = min_dir_changes_path[::-1]
+                        # print(
+                        #     f"\nstart: {start_key}, end: {end_key}, path: {min_dir_changes_path}",
+                        # )
+
+                    elif start_key in "^A" and end_key == "<":
+                        # need to go down before going left
+                        min_dir_changes_path = min_dir_changes_path[::-1]
+
+                    elif start_key == "<" and end_key in "^A":
+                        # need to go right before going up
+                        pass
+
+                    directions[start_key][end_key] = min_dir_changes_path
                     break
 
                 for neighbor_key, neighbor_direction in keypad[key]:
                     if neighbor_key not in visited:
+                        new_path = path + neighbor_direction
                         heappush(
                             queue,
-                            (distance + 1, neighbor_key, path + neighbor_direction),
+                            (
+                                distance + 1,
+                                neighbor_key,
+                                new_path,
+                            ),
                         )
 
     return directions
@@ -188,5 +217,6 @@ def part_two(raw_input: list[str]) -> int | str | None:
 
 
 def run(input_file: str) -> None:
+    # 161468 too high
     part_one(get_input(input_file))
     part_two(get_input(input_file))
