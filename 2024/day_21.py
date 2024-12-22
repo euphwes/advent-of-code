@@ -145,6 +145,11 @@ def _get_keypad_direction_chart(keypad):
                         # need to go right before going up
                         pass
 
+                    if start_key == "A" and end_key == "5":
+                        # TEST CASE
+                        # reverse this even though it doesn't need it
+                        min_dir_changes_path = min_dir_changes_path[::-1]
+
                     directions[start_key][end_key] = min_dir_changes_path
                     break
 
@@ -167,6 +172,19 @@ def _p(val):
     print(val)
 
 
+def _debug_paths(target_path, new_path):
+    target_path = list(target_path)
+
+    target_to_print = ""
+    new_to_print = ""
+
+    for chunk in new_path.split("A")[:-1]:
+        new_to_print += chunk + "A  "
+        target_to_print += (" " * len(chunk)) + target_path.pop(0) + "  "
+
+    print(f"\n{target_to_print}\n{new_to_print}")
+
+
 def _solve_keycode(keycode, numeric_keypad_paths, directional_keypad_paths):
     _p(f"\n==================\nsolving keycode: {keycode}")
     path = ""
@@ -179,7 +197,7 @@ def _solve_keycode(keycode, numeric_keypad_paths, directional_keypad_paths):
 
     paths = []
     paths.append(path)
-    _p(f"\nto get {keycode}:\n{path}")
+    _debug_paths(keycode, path)
 
     for _ in range(2):
         target_path = paths[-1]
@@ -192,7 +210,7 @@ def _solve_keycode(keycode, numeric_keypad_paths, directional_keypad_paths):
             curr_char = char
 
         paths.append(next_path)
-        _p(f"\nto get {target_path}:\n{next_path}")
+        _debug_paths(target_path, next_path)
 
     length = len(paths[-1])
     keycode_digits = int("".join(c for c in keycode if c.isdigit()))
@@ -205,6 +223,7 @@ def part_one(raw_input: list[str]) -> int | str | None:
     numeric_keypad_paths = _get_keypad_direction_chart(NUMERIC_KEYPAD_GRAPH)
     directional_keypad_paths = _get_keypad_direction_chart(DIRECTIONAL_KEYPAD_GRAPH)
 
+    print("==============")
     return sum(
         _solve_keycode(keycode, numeric_keypad_paths, directional_keypad_paths)
         for keycode in raw_input
