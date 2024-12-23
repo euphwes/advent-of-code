@@ -129,6 +129,7 @@ def _shortest_len_to_press_directional(
     return min_path_lengths
 
 
+@cache
 def _shortest_len_to_press_numeric(
     start_char: str,
     target_char: str,
@@ -219,6 +220,7 @@ def run(input_file: str) -> None:
     # 161468 too high
     part_one(get_input(input_file))
     part_two(get_input(input_file))
+    print(_shortest_len_to_press_directional.cache_info())
 
 
 assert """
