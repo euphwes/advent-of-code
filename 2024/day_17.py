@@ -24,14 +24,27 @@ def part_one(raw_input: list[str]) -> int | str | None:
     return ",".join([str(n) for n in computer.execute()])
 
 
+def _compare_output(output: list[int], target_program: list[int]) -> int:
+    target_len = len([2, 4, 1, 7, 7, 5, 1, 7, 0, 3, 4, 1, 5, 5, 3, 0])
+    output_len = len(output)
+    if output_len < target_len:
+        return -1
+    if output_len > target_len:
+        return 1
+    return 0
+
+
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(raw_input: list[str]) -> int | str | None:
+    # target_program = [2, 4, 1, 7, 7, 5, 1, 7, 0, 3, 4, 1, 5, 5, 3, 0]
+    target_program = [0, 3, 5, 4, 3, 0]
+
     # Program: 2,4,1,7,7,5,1,7,0,3,4,1,5,5,3,0
     # 2100000000
     f = []
-    for i in int_stream(end=100):
+    for i in int_stream():
         computer = Computer(
-            program=[2, 4, 1, 7, 7, 5, 1, 7, 0, 3, 4, 1, 5, 5, 3, 0],
+            program=target_program,
             initial_registers={
                 "A": i,
                 "B": 0,
@@ -39,15 +52,9 @@ def part_two(raw_input: list[str]) -> int | str | None:
             },
         )
         raw_output = [str(n) for n in computer.execute()]
-        output = ",".join(raw_output)
-        output_b8_to_b10 = int("".join(raw_output), 8)
-        f.append(str(output_b8_to_b10))
-        # if i % 100000 == 0:
-        # print(f"\nTrying i={i}, output={output}, b8={output_b8_to_b10}")
-        # print(rf"i={i}, b8={output_b8_to_b10}")
-        if output == "2,4,1,7,7,5,1,7,0,3,4,1,5,5,3,0":
+        if raw_output == target_program:
             return i
-    print(",".join(f))
+
     raise RuntimeError("No solution found")
 
 
