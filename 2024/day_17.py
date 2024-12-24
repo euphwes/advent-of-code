@@ -23,16 +23,6 @@ def part_one(raw_input: list[str]) -> int | str | None:
     return ",".join([str(n) for n in computer.execute()])
 
 
-def _compare_output(output: list[int], target_program: list[int]) -> int:
-    target_len = len([2, 4, 1, 7, 7, 5, 1, 7, 0, 3, 4, 1, 5, 5, 3, 0])
-    output_len = len(output)
-    if output_len < target_len:
-        return -1
-    if output_len > target_len:
-        return 1
-    return 0
-
-
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(raw_input: list[str]) -> int | str | None:
     target_program = [2, 4, 1, 7, 7, 5, 1, 7, 0, 3, 4, 1, 5, 5, 3, 0]
@@ -77,7 +67,6 @@ def part_two(raw_input: list[str]) -> int | str | None:
         a_in_binary = bin(a)[2:]
         print()
         print(f"A: {a} (binary: {a_in_binary})")
-
         output = []
         while True:
             b = a % 8
@@ -89,13 +78,14 @@ def part_two(raw_input: list[str]) -> int | str | None:
             output.append(b % 8)
             if a == 0:
                 break
-        assert len(output) == target_length
+        # assert len(output) == target_length
         by_program = ",".join([str(n) for n in output])
         print(f"Output: {by_program}")
+        return by_program
 
-    _debug(int("1000000000000000000000000000000000000000000000", 2))
-    _debug(int("1000000000000000000000000000000000000000000001", 2))
-    _debug(int("1111111111111111000000100000100000010100000000", 2))
+    _debug(int("111100010001000101010111010100110010110011011010", 2))
+    # this is 265056781806810, which gives us
+    # 4,2,0,5,3,5,6,[7,0,3,4,1,5,5,3,0]
 
 
 def run(input_file: str) -> None:
