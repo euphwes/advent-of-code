@@ -78,14 +78,23 @@ def part_two(raw_input: list[str]) -> int | str | None:
             output.append(b % 8)
             if a == 0:
                 break
-        # assert len(output) == target_length
+        assert len(output) == target_length
         by_program = ",".join([str(n) for n in output])
         print(f"Output: {by_program}")
         return by_program
 
-    _debug(int("111100010001000101010111010100110010110011011010", 2))
+    # _debug(int("111100010001000101010111010100110010110011011010", 2))
     # this is 265056781806810, which gives us
     # 4,2,0,5,3,5,6,[7,0,3,4,1,5,5,3,0]
+
+    # ok so lower 9 numbers are correct, what if we hold top 9*3 = 27 bits constant?
+    # hold these upper bits constant 111100010001000101010111010
+    # SAVE THIS v
+    # _debug(int("111100010001000101010111010" + "000000000000000000000", 2))
+    # SAVE THIS ^
+
+    _debug(int("111100010001000101010111010100110010110011011010", 2))
+    _debug(int("111100010001000101" + "000000000000000000000000000000", 2))
 
 
 def run(input_file: str) -> None:

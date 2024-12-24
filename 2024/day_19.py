@@ -45,39 +45,6 @@ def _is_valid_design(design: str, towel_patterns: frozenset[str]) -> bool:
 def _ways_to_make_design(
     design: str,
     towel_patterns: frozenset[str],
-) -> set[tuple[str]]:
-    # print(f'ways_to_make_design("{design}")')
-    if not _is_valid_design(design, towel_patterns):
-        return set()
-
-    combos = set()
-    if design in towel_patterns:
-        combos.add((design,))
-
-    for i in range(1, len(design)):
-        left = design[:i]
-        right = design[i:]
-
-        if not _is_valid_design(left, towel_patterns):
-            continue
-        if not _is_valid_design(right, towel_patterns):
-            continue
-
-        left_combos = _ways_to_make_design(left, towel_patterns)
-        right_combos = _ways_to_make_design(right, towel_patterns)
-
-        for left_combo in left_combos:
-            for right_combo in right_combos:
-                combo = left_combo + right_combo
-                combos.add(tuple(combo))
-
-    return combos
-
-
-@cache
-def _ways_to_make_design_v2(
-    design: str,
-    towel_patterns: frozenset[str],
 ) -> int:
     # print(f'ways_to_make_design("{design}")')
     if not _is_valid_design(design, towel_patterns):
@@ -91,15 +58,10 @@ def _ways_to_make_design_v2(
         left = design[:i]
         right = design[i:]
 
-        if not _is_valid_design(left, towel_patterns):
-            continue
-        if not _is_valid_design(right, towel_patterns):
+        if left not in towel_patterns:
             continue
 
-        left_combos = _ways_to_make_design_v2(left, towel_patterns)
-        right_combos = _ways_to_make_design_v2(right, towel_patterns)
-
-        combos += left_combos * right_combos
+        combos += _ways_to_make_design(right, towel_patterns)
 
     return combos
 
@@ -116,25 +78,7 @@ def part_two(raw_input: list[str]) -> int | str | None:
     towel_patterns = _parse_towel_patterns(raw_input)
     designs = _parse_designs(raw_input)
 
-    foo = 0
-    try:
-        for design in designs:
-            # print(f"\n NEW LINE {design}")
-            foo += _ways_to_make_design_v2(design, towel_patterns)
-        # capture ctrl-c
-    except KeyboardInterrupt:
-        pass
-
-    print()
-    print(_ways_to_make_design.__name__)
-    print(_ways_to_make_design.cache_info())
-
-    print()
-    print(_is_valid_design.__name__)
-    print(_is_valid_design.cache_info())
-    print()
-
-    return foo
+    return sum(_ways_to_make_design(design, towel_patterns) for design in designs)
 
 
 def run(input_file: str) -> None:
