@@ -1,11 +1,12 @@
-""" Module providing utility functions related to iteration. """
+"""Module providing utility functions related to iteration."""
 
-from typing import Collection, Iterable, Tuple
+from collections.abc import Iterable
 
 
 def repeat_forever(iter1):
     """A generator which yields values from a provided iterable indefinitely, starting back over
-    once the iterator is exhausted."""
+    once the iterator is exhausted.
+    """
 
     while True:
         yield from iter1
@@ -13,7 +14,8 @@ def repeat_forever(iter1):
 
 def nested_iterable(iter1, iter2):
     """A generator for yielding pairs of values built from iterator over two iterables in a
-    nested for-loop fashion."""
+    nested for-loop fashion.
+    """
 
     for a in iter1:
         for b in iter2:
@@ -22,7 +24,8 @@ def nested_iterable(iter1, iter2):
 
 def triple_iterable(iter1, iter2, iter3):
     """A generator for yielding triples of values built from iterator over three iterables in a
-    nested for-loop fashion."""
+    nested for-loop fashion.
+    """
 
     for a in iter1:
         for b in iter2:
@@ -30,16 +33,17 @@ def triple_iterable(iter1, iter2, iter3):
                 yield a, b, c
 
 
-def int_stream(start=0, end=None):
+def int_stream(start=0, end=None, step=1):
     """A generator yielding integers starting at `start`, continuing to (and including) `end`
-    if a value is provided."""
+    if a value is provided.
+    """
 
     n = start
     while True:
         yield n
-        if n == end:
+        if end and n >= end:
             return
-        n += 1
+        n += step
 
 
 def bidirectional_range(start, end, inclusive=False):
@@ -69,7 +73,7 @@ def bidirectional_range(start, end, inclusive=False):
             curr -= 1
 
 
-def min_and_max(values: Iterable[int]) -> Tuple[int, int]:
+def min_and_max(values: Iterable[int]) -> tuple[int, int]:
     """Returns a tuple of the min and max values in the provided iterable."""
 
     values = set(values)
