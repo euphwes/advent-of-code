@@ -6,8 +6,8 @@ from .computer import Computer
 DAY = 17
 YEAR = 2024
 
-PART_ONE_DESCRIPTION = ""
-PART_ONE_ANSWER = None
+PART_ONE_DESCRIPTION = "part 1"
+PART_ONE_ANSWER = "2,0,4,2,7,0,1,0,3"
 
 PART_TWO_DESCRIPTION = ""
 PART_TWO_ANSWER = None
@@ -65,23 +65,38 @@ def part_two(raw_input: list[str]) -> int | str | None:
 
     def _debug(a):
         a_in_binary = bin(a)[2:]
-        print()
-        print(f"A: {a} (binary: {a_in_binary})")
+        b = 0
+        c = 0
+        # print()
+        # print(f"A: {a} (binary: {a_in_binary})")
+        # computer_output = Computer(
+        #     program=target_program,
+        #     initial_registers={"A": a, "B": 0, "C": 0},
+        # ).execute()
         output = []
         while True:
             b = a % 8
-            b ^= 7
+            b = b ^ 7
             c = a // (2**b)
-            b ^= 7
-            a //= 8
-            b ^= c
+            b = b ^ 7
+            a = a // 8
+            b = b ^ c
             output.append(b % 8)
             if a == 0:
                 break
-        assert len(output) == target_length
-        by_program = ",".join([str(n) for n in output])
-        print(f"Output: {by_program}")
+        # assert len(output) == target_length
+        by_program = output
+        # print(f"      My output: {by_program}")
+        # print(f"Computer output: {computer_output}")
+        # print(f"len of my output: {len(by_program)}")
+        # if by_program != computer_output:
+        #     print(f"ERROR: {by_program} != {computer_output}")
+        #     raise ValueError("Mismatch")
         return by_program
+
+    # for i in range(1_000_000):
+    #     _debug(i)
+    # return
 
     # _debug(int("111100010001000101010111010100110010110011011010", 2))
     # this is 265056781806810, which gives us
@@ -93,8 +108,45 @@ def part_two(raw_input: list[str]) -> int | str | None:
     # _debug(int("111100010001000101010111010" + "000000000000000000000", 2))
     # SAVE THIS ^
 
-    _debug(int("111100010001000101010111010100110010110011011010", 2))
-    _debug(int("111100010001000101" + "000000000000000000000000000000", 2))
+    # print(_debug(8**0))
+    # print(_debug(8**1))
+    # print(_debug(8**2))
+    # print(_debug(8**3))
+    # print(_debug(8**4))
+    # print(_debug(8**5))
+    # print(_debug(8**6))
+    # print(_debug(8**7))
+    # print(_debug(8**8))
+    # print(_debug(8**9))
+    # print(_debug(8**10))
+    # print(_debug(8**11))
+    # print(_debug(8**12))
+    # print(_debug(8**13))
+    # print(_debug(8**14))
+    # print(_debug(8**15))
+    # return
+
+    def _solve_digit(n, candidates):
+        print(f"\nChecking {n} digits, so far {candidates}")
+        possibilities_for_n_digits = []
+
+        for answer in candidates:
+            print(f"Working on {answer} so far")
+            for i in range(8):
+                subcandidate = "" if answer is None else bin(answer)[2:]
+                candidate = subcandidate + bin(i)[2:]
+                candidate = int(candidate, 2)
+                output = _debug(candidate)
+                if output == target_program[-1 * n :]:
+                    possibilities_for_n_digits.append(candidate)
+                    print(f"Found candidate: {candidate} produces {output}")
+
+        if n == 16:
+            return possibilities_for_n_digits
+
+        return _solve_digit(n + 1, possibilities_for_n_digits)
+
+    return min(_solve_digit(1, [None]))
 
 
 def run(input_file: str) -> None:

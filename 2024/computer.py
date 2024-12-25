@@ -1,4 +1,3 @@
-from math import floor
 from types import NoneType
 
 
@@ -101,13 +100,13 @@ class Computer:
         }[param]
 
     def _enact_adv(self, operand: int) -> None:
-        self.registers["A"] = floor(self.registers["A"] / 2**operand)
+        self.registers["A"] = self.registers["A"] // (2**operand)
 
     def _enact_bdv(self, operand: int) -> None:
-        self.registers["B"] = floor(self.registers["A"] / 2**operand)
+        self.registers["B"] = self.registers["A"] // (2**operand)
 
     def _enact_cdv(self, operand: int) -> None:
-        self.registers["C"] = floor(self.registers["A"] / 2**operand)
+        self.registers["C"] = self.registers["A"] // (2**operand)
 
     def _enact_bxl(self, operand: int) -> None:
         self.registers["B"] = self.registers["B"] ^ operand
@@ -123,5 +122,4 @@ class Computer:
             self.instruction_ptr = operand
 
     def _enact_bxc(self, _: NoneType) -> None:
-        # Set register B to the bitwise XOR of registers B and C.
         self.registers["B"] = self.registers["B"] ^ self.registers["C"]
