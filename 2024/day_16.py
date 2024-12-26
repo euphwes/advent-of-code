@@ -1,6 +1,5 @@
-from heapq import heappush, heappop
-from hmac import new
-from itertools import pairwise
+from heapq import heappop, heappush
+
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 
@@ -19,24 +18,23 @@ def _neighbors(coord, grid, curr_direction):
 
     cx, cy = coord
 
-    if curr_direction == 'E' and grid.get((cx + 1, cy), '#') != "#":
-        neighbors.append(((cx + 1, cy), 'E'))
-    if curr_direction == 'W' and grid.get((cx - 1, cy), '#') != "#":
-        neighbors.append(((cx - 1, cy), 'W'))
-    if curr_direction == 'N' and grid.get((cx, cy - 1), '#') != "#":
-        neighbors.append(((cx, cy - 1), 'N'))
-    if curr_direction == 'S' and grid.get((cx, cy + 1), '#') != "#":
-        neighbors.append(((cx, cy + 1), 'S'))
+    if curr_direction == "E" and grid.get((cx + 1, cy), "#") != "#":
+        neighbors.append(((cx + 1, cy), "E"))
+    if curr_direction == "W" and grid.get((cx - 1, cy), "#") != "#":
+        neighbors.append(((cx - 1, cy), "W"))
+    if curr_direction == "N" and grid.get((cx, cy - 1), "#") != "#":
+        neighbors.append(((cx, cy - 1), "N"))
+    if curr_direction == "S" and grid.get((cx, cy + 1), "#") != "#":
+        neighbors.append(((cx, cy + 1), "S"))
 
-    if curr_direction in 'EW':
-        neighbors.append(((cx, cy), 'N'))
-        neighbors.append(((cx, cy), 'S'))
-    if curr_direction in 'NS':
-        neighbors.append(((cx, cy), 'W'))
-        neighbors.append(((cx, cy), 'E'))
+    if curr_direction in "EW":
+        neighbors.append(((cx, cy), "N"))
+        neighbors.append(((cx, cy), "S"))
+    if curr_direction in "NS":
+        neighbors.append(((cx, cy), "W"))
+        neighbors.append(((cx, cy), "E"))
 
     return neighbors
-
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
@@ -61,10 +59,10 @@ def part_one(raw_input: list[str]) -> int | str | None:
 
     visited = set()
     queue = []
-    heappush(queue, (0, start, 'E'))
+    heappush(queue, (0, start, "E"))
 
     while queue:
-        cost, curr, curr_dir  = heappop(queue)
+        cost, curr, curr_dir = heappop(queue)
         visited.add((curr, curr_dir))
         if curr == end:
             return cost
@@ -77,8 +75,7 @@ def part_one(raw_input: list[str]) -> int | str | None:
             elif ncoord != curr and ndir == curr_dir:
                 heappush(queue, ((cost + 1, ncoord, ndir)))
             else:
-                raise ValueError(f'Invalid state: {curr=}, {curr_dir=}, {ncoord=}, {ndir=}')
-
+                raise ValueError(f"Invalid state: {curr=}, {curr_dir=}, {ncoord=}, {ndir=}")
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
@@ -104,19 +101,18 @@ def part_two(raw_input: list[str]) -> int | str | None:
 
     visited = set()
     queue = []
-    heappush(queue, (0, start, 'E', [(0, start, 'E')]))
+    heappush(queue, (0, start, "E", [(0, start, "E")]))
 
     solutions = []
 
     while queue:
-        cost, curr, curr_dir, path  = heappop(queue)
+        cost, curr, curr_dir, path = heappop(queue)
         visited.add((curr, curr_dir))
         if curr == end:
             solutions.append((cost, path))
             continue
 
         for ncoord, ndir in _neighbors(curr, grid, curr_dir):
-
             if (ncoord, ndir) in visited:
                 continue
 
@@ -126,11 +122,17 @@ def part_two(raw_input: list[str]) -> int | str | None:
             # new_path = path.copy() + [(cost, ncoord, ndir)]
 
             if ncoord == curr and ndir != curr_dir:
-                heappush(queue, (cost + 1000, ncoord, ndir, path.copy() + [(cost + 1000, ncoord, ndir)]))
+                heappush(
+                    queue,
+                    (cost + 1000, ncoord, ndir, path.copy() + [(cost + 1000, ncoord, ndir)]),
+                )
             elif ncoord != curr and ndir == curr_dir:
-                heappush(queue, ((cost + 1, ncoord, ndir, path.copy() + [(cost + 1, ncoord, ndir)])))
+                heappush(
+                    queue,
+                    ((cost + 1, ncoord, ndir, path.copy() + [(cost + 1, ncoord, ndir)])),
+                )
             else:
-                raise ValueError(f'Invalid state: {curr=}, {curr_dir=}, {ncoord=}, {ndir=}')
+                raise ValueError(f"Invalid state: {curr=}, {curr_dir=}, {ncoord=}, {ndir=}")
 
     best_cost = min(solutions, key=lambda x: x[0])[0]
 
@@ -140,14 +142,6 @@ def part_two(raw_input: list[str]) -> int | str | None:
         if cost == best_cost:
             for _, coord, _ in path:
                 distinct_cells.add(coord)
-
-    for y, line in enumerate(raw_input):
-        for x, char in enumerate(line):
-            if (x, y) in distinct_cells:
-                print('O', end='')
-            else:
-                print(char, end='')
-        print()
 
     return len(distinct_cells)
 
