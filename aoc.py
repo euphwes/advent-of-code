@@ -92,7 +92,7 @@ def __create_year(year):
         print(f"Creating directory for inputs for year {year}")
         os.mkdir(f"{year}/inputs")
 
-    for day in range(1, 25):
+    for day in range(1, 26):
         if not os.path.exists(f"{year}/day_{day}.py"):
             print(f"Creating file for year {year}, day {day}")
 

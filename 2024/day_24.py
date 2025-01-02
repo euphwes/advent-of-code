@@ -46,7 +46,7 @@ def _parse_wire_operations(raw_input: list[str]) -> list[list[str]]:
 
     ops_leading_to_x_or_y.sort(key=lambda x: x[0])
     other_ops.sort(key=lambda x: x[3])
-    other_ops.sort(key=lambda x: x[1])  # sort by operation
+    # other_ops.sort(key=lambda x: x[1])  # sort by operation
 
     operations.extend(ops_leading_to_x_or_y)
     operations.extend(other_ops)
@@ -190,8 +190,12 @@ def part_two(raw_input: list[str]) -> int | str | None:
         )
 
     # write to file
-    with open("day24_adder.mmd", "w") as f:
+    with open("day24_adder_trial4.mmd", "w") as f:
         f.write(mermaid_output)
+
+    # manually inspecting the Mermaid graph output,
+    # finding discrepancies in the pattern of the adder circuitry
+    return "cph,jqn,kwb,qkf,tgr,z12,z16,z24"
 
 
 def run(input_file: str) -> None:
