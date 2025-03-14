@@ -1,3 +1,4 @@
+from collections.abc import Generator
 from string import ascii_lowercase
 
 from util.decorators import aoc_output_formatter
@@ -12,14 +13,8 @@ PART_TWO_DESCRIPTION = "Santa's password after that"
 PART_TWO_ANSWER = "vzcaabcc"
 
 
-# Hold all adjacent letter triplets from ascii_lowercase in a set, for faster lookup than `in`
-LETTER_STRAIGHT_TRIPLES = set(
-    ascii_lowercase[i : i + 3] for i in range(len(ascii_lowercase) - 2)
-)
-
-
-def _is_valid_password(password):
-    """Checks if the password is valid."""
+def _is_valid_password(password: str) -> bool:
+    """Check if the password is valid."""
 
     # If the password contains i, o, or l, it's not valid
     for forbidden_char in "iol":
@@ -30,7 +25,7 @@ def _is_valid_password(password):
     found_letter_straight = False
 
     for i in range(len(password) - 2):
-        if password[i : i + 3] in LETTER_STRAIGHT_TRIPLES:
+        if password[i : i + 3] in ascii_lowercase:
             found_letter_straight = True
             break
 
@@ -52,10 +47,12 @@ def _is_valid_password(password):
     return num_letter_pairs >= 2
 
 
-def _increment_password(password):
-    """Increments the password by changing the last letter to the following letter in the
-    alphabet, and if the any letter goes from `z` back to `a`, additionally increment the
-    next."""
+def _increment_password(password: str) -> str:
+    """Increment the password.
+
+    Change the last letter to the following letter in the alphabet, and if the any letter
+    goes from `z` back to `a`, additionally increment the next letter.
+    """
 
     # Convert the password into a list of indices of those letters, in reverse order. The order
     # is reversed so we can start with incrementing the "first" character and then move on
@@ -65,21 +62,19 @@ def _increment_password(password):
     for i, char_index in enumerate(index_buffer):
         # Increment the index of the password character mod 26 (so we stay in the range a-z)
         # an update the character's index in the password
-        char_index = (char_index + 1) % 26
-        index_buffer[i] = char_index
+        index_buffer[i] = (char_index + 1) % 26
 
         # If the current "new index" is not 0, then we didn't circle back to a from z, so we can
         # just break and return. If we did overflow from z back to a, we need to stay in this
         # loop so we can increment the next character
-        if char_index != 0:
+        if index_buffer[i] != 0:
             break
 
     return "".join(ascii_lowercase[i] for i in reversed(index_buffer))
 
 
-def _password_generator(password):
-    """And endless generator of valid Santa passwords, starting with the next password after the
-    provided one."""
+def _password_generator(password: str) -> Generator[str]:
+    """Endless generator of valid Santa passwords."""
 
     while True:
         password = _increment_password(password)
@@ -88,21 +83,14 @@ def _password_generator(password):
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
-def part_one(password_generator):
-    return next(password_generator)
+def part_one(previous_password: str) -> str:
+    return next(_password_generator(previous_password))
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
-def part_two(password_generator):
-    return next(password_generator)
+def part_two(previous_password: str) -> str:
+    return next(_password_generator(previous_password))
 
 
-# ----------------------------------------------------------------------------------------------
-
-
-def run(input_file):
-
-    password_generator = _password_generator("vzbxkghb")
-
-    part_one(password_generator)
-    part_two(password_generator)
+def run(_: str) -> None:
+    part_two(part_one("vzbxkghb"))

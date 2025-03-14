@@ -11,8 +11,8 @@ PART_TWO_DESCRIPTION = "answer"
 PART_TWO_ANSWER = 2046
 
 
-def _count_decoded(s):
-    """Counts the number of decoded characters in an encoded string."""
+def _count_decoded(s: str) -> int:
+    """Count the number of decoded characters in an encoded string."""
 
     count = 0
 
@@ -22,7 +22,6 @@ def _count_decoded(s):
     s_iterable = enumerate(s)
 
     for i, char in s_iterable:
-
         count += 1
 
         # If this character is not a backslash, it's just the literal character.
@@ -42,29 +41,23 @@ def _count_decoded(s):
     return count
 
 
-def _count_encoded(s):
-    """Counts the number of characters in the encodes representation of the supplied string."""
+def _count_encoded(s: str) -> int:
+    """Count the number of characters in the encodes representation of the supplied string."""
 
     # Start with 2 for the framing quotes, then add 2 for literal " or \, and 1 for the rest
     return 2 + sum(2 if c in ("\\", '"') else 1 for c in s)
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
-def part_one(lines):
-    return sum(len(s) for s in lines) - sum(_count_decoded(s) for s in lines)
+def part_one(raw_input: list[str]) -> int | str | None:
+    return sum(len(s) for s in raw_input) - sum(_count_decoded(s) for s in raw_input)
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
-def part_two(lines):
-    return sum(_count_encoded(s) for s in lines) - sum(len(s) for s in lines)
+def part_two(raw_input: list[str]) -> int | str | None:
+    return sum(_count_encoded(s) for s in raw_input) - sum(len(s) for s in raw_input)
 
 
-# ----------------------------------------------------------------------------------------------
-
-
-def run(input_file):
-
-    lines = get_input(input_file)
-
-    part_one(lines)
-    part_two(lines)
+def run(input_file: str) -> None:
+    part_one(get_input(input_file))
+    part_two(get_input(input_file))

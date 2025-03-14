@@ -1,5 +1,5 @@
 from util.decorators import aoc_output_formatter
-from util.input import get_tokenized_input
+from util.input import get_input
 
 DAY = 7
 YEAR = 2015
@@ -15,7 +15,7 @@ class UnresolvedSignalsException(BaseException):
     pass
 
 
-__bitwise_operators = {
+_bitwise_operators = {
     "OR": lambda x, y: x | y,
     "AND": lambda x, y: x & y,
     "RSHIFT": lambda x, y: x >> y,
@@ -23,8 +23,8 @@ __bitwise_operators = {
 }
 
 
-def _evaluate(expr, wires):
-    """Attempts to evaluate the expression provided, given the signals we already know."""
+def _evaluate(expr: list[str], wires: dict[str, int]) -> int:
+    """Attempt to evaluate the expression provided, given the signals we already know."""
 
     # If the expression has one token, it's just a single signal/value
     if len(expr) == 1:
@@ -34,11 +34,10 @@ def _evaluate(expr, wires):
             return int(token)
         except ValueError:
             # If it's not an integer, see if it's a signal we already know and return that
-            if token in wires.keys():
+            if token in wires:
                 return wires[token]
             # If we don't know this signal, raise an exception
-            else:
-                raise UnresolvedSignalsException()
+            raise UnresolvedSignalsException from None
 
     # If the expression has two tokens, it must be `NOT <signal>`.
     # Evaluate <signal> and take its complement
@@ -48,21 +47,20 @@ def _evaluate(expr, wires):
     # If the expression has three tokens, it must be OR, AND, LSHIFT, or RSHIFT with two
     # operands. Grab and evaluate the operands, then run through the correct operation
     lhs, rhs = _evaluate([expr[0]], wires), _evaluate([expr[2]], wires)
-    return __bitwise_operators[expr[1]](lhs, rhs)
+    return _bitwise_operators[expr[1]](lhs, rhs)
 
 
-def _evaluate_all_signals(connections):
-    """Evaluates all signals in the given list of connections."""
+def _evaluate_all_signals(connections: list[tuple[list[str], str]]) -> dict[str, int]:
+    """Evaluate all signals in the given list of connections."""
 
-    wires = dict()
+    wires = {}
 
     # Continuously iterate over the connections, evaluating what we're able to at each pass and
     # then removing that expression from the connections. When the list of connects is empty,
     # we'll break
     while True:
-        indices_to_pop = list()
+        indices_to_pop = []
         for i, (lhs, rhs) in enumerate(connections):
-
             # Try to evaluate the left hand side of the expression. If we're able, store the
             # value of that expression into the signal specified by the right hand side. Then
             # save the index of the current connection so we can remove it from the list once we
@@ -89,32 +87,38 @@ def _evaluate_all_signals(connections):
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
-def part_one(connections):
-    wires = _evaluate_all_signals(connections)
-    return wires["a"]
+def part_one(raw_input: list[str]) -> int | str | None:
+    # This is a list of tuples, where the first element is an "expression" (two wires and an
+    # operator), and the right side is the wire which is the result of the expression.
+    # Ex: (hg OR hh, ke)
+    connections = [
+        (lhs.split(), rhs.strip()) for lhs, rhs in [line.split("->") for line in raw_input]
+    ]
+
+    return _evaluate_all_signals(connections)["a"]
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
-def part_two(connections):
+def part_two(raw_input: list[str]) -> int | str | None:
+    # Evaluate the first problem again, to see what signal "a" is
+    connections = [
+        (lhs.split(), rhs.strip()) for lhs, rhs in [line.split("->") for line in raw_input]
+    ]
     wires = _evaluate_all_signals(connections)
-    return wires["a"]
+    signal_a = wires["a"]
 
-
-# ----------------------------------------------------------------------------------------------
-
-
-def run(input_file):
-
+    # Reset the state of all the wires, apply signal "a" from part 1 to wire "b" now,
+    # and then re-evaluate all the signals/wires again.
     connections = [
-        (lhs.split(), rhs.strip()) for lhs, rhs in get_tokenized_input(input_file, "->")
+        (lhs.split(), rhs.strip())
+        for lhs, rhs in [line.split("->") for line in raw_input]
+        if rhs.strip() != "b"
     ]
-    signal_a = part_one(connections)
+    connections.append(([str(signal_a)], "b"))
 
-    # Grab the input again, but this time remove the connection that supplies signal `b` and
-    # then apply the end result on wire `a` from part 1 to the signal `b` for the next run.
-    connections = [
-        (lhs.split(), rhs.strip()) for lhs, rhs in get_tokenized_input(input_file, "->")
-    ]
-    connections = [(lhs, rhs) for (lhs, rhs) in connections if not rhs == "b"]
-    connections.append(([signal_a], "b"))
-    part_two(connections)
+    return _evaluate_all_signals(connections)["a"]
+
+
+def run(input_file: str) -> None:
+    part_one(get_input(input_file))
+    part_two(get_input(input_file))
