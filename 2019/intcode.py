@@ -1,10 +1,13 @@
 from collections import defaultdict
+from types import MappingProxyType
 
 
 class InputNotAvailableException(BaseException):
-    """An exception to indicate that an IntcodeComputer is attempting to read
-    input but none is available.
-    """
+    """Indicate that an IntcodeComputer is attempting to read input but none is available."""
+
+
+# Days with intcode
+# 2, 5, 7, 9, 11
 
 
 class IntcodeComputer:
@@ -13,7 +16,7 @@ class IntcodeComputer:
     - https://adventofcode.com/2019/day/2, start of the Intcode spec
         - opcodes 1 (add), 2 (multiply), 99 (halt)
 
-    - https://adventofcode.com/2019/day/2, continue building on Intcode spec
+    - https://adventofcode.com/2019/day/5, continue building on Intcode spec
         - opcodes 3 (input), 4 (output)
         - parameter modes: immediate and positional
     """
@@ -37,17 +40,19 @@ class IntcodeComputer:
     STATE_RUNNING = "running"  # computer actively running program
     STATE_WAITING = "waiting"  # computer needs input that isn't yet available
 
-    OPCODE_NUM_PARAMS_MAP = {
-        OPCODE_ADD: 3,
-        OPCODE_MULT: 3,
-        OPCODE_INPUT: 1,
-        OPCODE_OUTPUT: 1,
-        OPCODE_JIT: 2,
-        OPCODE_JIF: 2,
-        OPCODE_LESS: 3,
-        OPCODE_EQUALS: 3,
-        OPCODE_ADJ_REL_BASE: 1,
-    }
+    OPCODE_NUM_PARAMS_MAP = MappingProxyType(
+        {
+            OPCODE_ADD: 3,
+            OPCODE_MULT: 3,
+            OPCODE_INPUT: 1,
+            OPCODE_OUTPUT: 1,
+            OPCODE_JIT: 2,
+            OPCODE_JIF: 2,
+            OPCODE_LESS: 3,
+            OPCODE_EQUALS: 3,
+            OPCODE_ADJ_REL_BASE: 1,
+        },
+    )
 
     def __init__(self):
         """Initializes an Intcode computer. Sets the instruction pointer to

@@ -1,7 +1,7 @@
-from util.input import get_tokenized_input
-from util.intcode import IntcodeComputer
 from util.decorators import aoc_output_formatter
+from util.input import get_tokenized_input
 
+from .intcode import IntcodeComputer
 
 DAY = 5
 YEAR = 2019

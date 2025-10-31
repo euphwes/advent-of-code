@@ -1,7 +1,6 @@
+from util.decorators import aoc_output_formatter
 from util.input import get_input
 from util.iter import nested_iterable
-from util.decorators import aoc_output_formatter
-
 
 DAY = 8
 YEAR = 2019
@@ -16,7 +15,8 @@ PART_TWO_ANSWER = None
 class LayeredImage:
     """An image built from layers of pixels that are black, white, or
     transparent. When rendered, any transparent pixels show the color of the
-    pixel below it."""
+    pixel below it.
+    """
 
     BLACK = 0
     WHITE = 1
@@ -39,7 +39,8 @@ class LayeredImage:
         [0,0,2,2,1,1,2,2,1,1,0,0] for 2x2 image -->
 
         [[0,0],  [[1,1],  [[1,1],
-         [2,2]]   [2,2]]   [0,0]]"""
+         [2,2]]   [2,2]]   [0,0]]
+        """
 
         w = self.width
         h = self.height
@@ -53,7 +54,8 @@ class LayeredImage:
     def _build_image(self, layers):
         """Builds the final image in a single 2D array. For each point (x,y) in the image,
         determine the color of the pixel at that coordinate by finding the first non-transparent
-        pixel at that coordinate starting from the top layer and working down."""
+        pixel at that coordinate starting from the top layer and working down.
+        """
 
         w = self.width
         h = self.height
@@ -64,15 +66,15 @@ class LayeredImage:
             for layer in layers:
                 if layer[y][x] == LayeredImage.TRANSPARENT:
                     continue
-                else:
-                    image[y][x] = layer[y][x]
-                    break
+                image[y][x] = layer[y][x]
+                break
 
         return image
 
     def render(self):
         """Returns a string representation of the image, with `█` and space characters to
-        represent black and white pixels."""
+        represent black and white pixels.
+        """
 
         pad = self.padding
         width = self.width

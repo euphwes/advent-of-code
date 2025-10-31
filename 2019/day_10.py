@@ -34,13 +34,13 @@ def _build_asteroid_angle_map(
         if asteroid_1 == asteroid_2:
             continue
         asteroid_angles[asteroid_1][angle_between(asteroid_1, asteroid_2)].append(
-            asteroid_2
+            asteroid_2,
         )
         asteroid_angles[asteroid_2][angle_between(asteroid_2, asteroid_1)].append(
-            asteroid_1
+            asteroid_1,
         )
 
-    return cast(MapOfCoordToOtherCoordsByAngle, asteroid_angles)
+    return cast("MapOfCoordToOtherCoordsByAngle", asteroid_angles)
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
@@ -55,15 +55,13 @@ def part_one(asteroid_map):
             if other_asts:
                 curr_count += 1
 
-        if curr_count > best_count:
-            best_count = curr_count
+        best_count = max(best_count, curr_count)
 
     return best_count
 
 
 @aoc_output_formatter(YEAR, DAY, 2, PART_TWO_DESCRIPTION, assert_answer=PART_TWO_ANSWER)
 def part_two(asteroid_map):
-
     asteroid_angles = _build_asteroid_angle_map(asteroid_map)
 
     best_count = 0
