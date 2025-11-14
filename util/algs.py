@@ -2,7 +2,7 @@ from math import atan2, pi
 
 
 def manhattan_distance(coord1, coord2):
-    """Returns the Manhattan distance between two coordinates."""
+    """Return the Manhattan distance between two coordinates."""
 
     x1, y1 = coord1
     x2, y2 = coord2
@@ -10,7 +10,7 @@ def manhattan_distance(coord1, coord2):
 
 
 def manhattan_distance_3d(coord1, coord2):
-    """Returns the Manhattan distance between two 3D coordinates."""
+    """Return the Manhattan distance between two 3D coordinates."""
 
     x1, y1, z1 = coord1
     x2, y2, z2 = coord2
@@ -18,7 +18,7 @@ def manhattan_distance_3d(coord1, coord2):
 
 
 def manhattan_distance_4d(coord1, coord2):
-    """Returns the Manhattan distance between two 4D coordinates."""
+    """Return the Manhattan distance between two 4D coordinates."""
 
     x1, y1, z1, t1 = coord1
     x2, y2, z2, t2 = coord2
@@ -27,8 +27,7 @@ def manhattan_distance_4d(coord1, coord2):
 
 
 def angle_between(coord1, coord2):
-    """
-    Returns the angle (in degrees) between two coordinates.
+    """Return the angle (in degrees) between two coordinates.
 
     Coordinates are expressed with positive X going right,
     and positive Y going down.
@@ -48,6 +47,4 @@ def angle_between(coord1, coord2):
     dy = y2 - y1
 
     theta = atan2(dy, dx)
-    angle = ((theta) * (180 / pi) + 360) % 360
-
-    return angle
+    return ((theta) * (180 / pi) + 360) % 360
