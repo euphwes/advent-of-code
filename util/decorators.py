@@ -10,7 +10,12 @@ SECONDS_ELAPSED = "Ran in {}.{} s"
 
 
 def aoc_output_formatter(
-    year, day, part, label, ignore_return_val=False, assert_answer=None
+    year,
+    day,
+    part,
+    label,
+    ignore_return_val=False,
+    assert_answer=None,
 ):
     """Builds a decorator to format the output for a specific AoC solution function with
     niceties like the current day, which problem part it is, and an optional meaningful label
@@ -18,7 +23,8 @@ def aoc_output_formatter(
 
     The user can optionally choose to ignore the decorated function's return value, which is
     useful if the problem solution is output by some othermeans (like being printed to console),
-    not returned by the function."""
+    not returned by the function.
+    """
 
     header = AOC_OUTPUT_HEADER.format(year=year, day=day, part=part)
     output_format = "{label}: {value}" if label else "{value}"
@@ -26,15 +32,17 @@ def aoc_output_formatter(
     def __aoc_formatter_decorator(fn):
         """The actual decorator applied to the decorated function. Writes a header and builds an
         output string based on the year, day, part, and optional output label passed in
-        above."""
+        above.
+        """
 
         @aocTimer()
-        def __fn_wrapper(*args):
+        def __fn_wrapper(*args, **kwargs):
             """The decorated function, which is timed using the timer context manager class
-            defined below."""
+            defined below.
+            """
 
             print(header)
-            value = fn(*args)
+            value = fn(*args, **kwargs)
 
             # Only print the output (with value returned from decorated function) if we're not
             # ignoring the return value
@@ -57,7 +65,8 @@ def aoc_output_formatter(
 
 class aocTimer(ContextDecorator):
     """Records the runtime of the decorated function, and prints out a user-friendly
-    representation of the elapsed time."""
+    representation of the elapsed time.
+    """
 
     def __enter__(self):
         self.start = time()

@@ -191,6 +191,13 @@ class IntcodeComputer:
         """Returns from the output buffer."""
         return self.output_buffer.pop(0)
 
+    def get_all_output(self):
+        """Returns a list of all items from the output buffer."""
+        output = []
+        while self.has_output():
+            output.append(self.get_output())
+        return output
+
     def determine_param_value(self, param_id, param_mode):
         """Return a parameter's value based on its parameter mode.
         For a param in immediate mode, it's the value itself.
