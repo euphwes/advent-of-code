@@ -1,9 +1,18 @@
-""" A module that provides functions for working with common data structures. """
+"""A module that provides functions for working with common data structures."""
+
+from typing import Any
 
 from util.iter import nested_iterable
 
 
-def get_neighbors_of(pos_x, pos_y, grid, include_diagonals=True, with_coords=False):
+def get_neighbors_of(
+    pos_x: int,
+    pos_y: int,
+    grid: Any,
+    *,
+    include_diagonals: bool = True,
+    with_coords: bool = False,
+):
     """Returns a generator which yields all of neighbors of a particular position in a grid.
     Neighbors include all directly adjacent cells, as well as diagonals unless `include_diagonals`
     is False. If `with_coords` is True, this yields `(neighbor, (x,y) coords of neighbor)`.
@@ -31,7 +40,12 @@ def get_neighbors_of(pos_x, pos_y, grid, include_diagonals=True, with_coords=Fal
 
 
 def get_neighbors_of_dict_based(
-    pos_x, pos_y, grid, include_diagonals=True, with_coords=False
+    pos_x: int,
+    pos_y: int,
+    grid: Any,
+    *,
+    include_diagonals: bool = True,
+    with_coords: bool = False,
 ):
     """Returns a generator which yields all of neighbors of a particular position in a grid.
     Neighbors include all directly adjacent cells, as well as diagonals unless `include_diagonals`
