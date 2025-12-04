@@ -124,19 +124,30 @@ def run(input_file: str) -> None:
     #
     # L,6,R,12
     # L,6,R,12
+    #
     # L,10,L,4,L,6
+    #
     # L,6,R,12
     # L,6,R,12
+    #
     # L,10,L,4,L,6    * bottom/left of top loop, definitely correct to here
     #
     # L,6,R,12
-    # L,6,L,10
-    # L,10,L,4,L,6,R,12
-    # L,10,L,4,L,6
-    # L,10
-    # L,10,L,4,L,6
+    #
+    # L,6,L,10,L,10,L,4
+    #
     # L,6,R,12
-    # L,6,L,10
+    #
+    # L,10,L,4,L,6
+    #
+    # L,10,L,10,L,4,L,6
+    #
+    # L,6,R,12
+    #
+    # L,6
+    #
+    # L,10
+    #
     # L,10,L,4,L,6
     #
     # ##################
