@@ -140,7 +140,9 @@ def run(input_file: str) -> None:
     #
     # L,10,L,4,L,6
     #
-    # L,10,L,10,L,4,L,6
+    # L,10
+    #
+    # L,10,L,4,L,6
     #
     # L,6,R,12
     #
