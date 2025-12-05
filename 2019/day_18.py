@@ -34,6 +34,7 @@ class KeySearchState:
 
 @dataclass
 class KeyOrderSearchState:
+    coord: Coord
     steps: int
     keys_owned: list[str]
 
@@ -43,6 +44,10 @@ class KeyOrderSearchState:
     @property
     def key_set(self) -> frozenset[str]:
         return frozenset(self.keys_owned)
+
+    @property
+    def solved(self) -> bool:
+        return set(self.keys_owned) == set(KEYS)
 
 
 START = "@"
@@ -157,6 +162,7 @@ def _shortest_path_to_all_keys(grid: dict[Coord, str]) -> int:
     heappush(
         queue,
         KeyOrderSearchState(
+            coord=start_position,
             steps=0,
             keys_owned=[],
         ),
@@ -173,13 +179,27 @@ def _shortest_path_to_all_keys(grid: dict[Coord, str]) -> int:
 
         visited.add(state.key_set)
 
-    next_key_choices = _distance_to_keys_accessible(
-        start=(40, 40),
-        grid=grid,
-        keys_owned=[],
-        key_coordinates=key_coordinates,
-        door_coordinates=door_coordinates,
-    )
+        if state.solved:
+            return state.steps
+
+        for next_key, distance in _distance_to_keys_accessible(
+            start=state.coord,
+            grid=grid,
+            keys_owned=state.keys_owned,
+            key_coordinates=key_coordinates,
+            door_coordinates=door_coordinates,
+        ).items():
+            heappush(
+                queue,
+                KeyOrderSearchState(
+                    coord=key_coordinates[next_key],
+                    steps=state.steps + distance,
+                    keys_owned=[*state.keys_owned, next_key],
+                ),
+            )
+
+    msg = "Should never reach here"
+    raise ValueError(msg)
 
 
 @aoc_output_formatter(YEAR, DAY, 1, PART_ONE_DESCRIPTION, assert_answer=PART_ONE_ANSWER)
