@@ -29,7 +29,8 @@ class PriorityStateGraphNode:
 
 def _parse_floor(floor):
     """Determine which chips and generators are on the provided floor, returned as a tuple of
-    (list_of_chip_elements, list_of_generator_elements)."""
+    (list_of_chip_elements, list_of_generator_elements).
+    """
 
     # Group the chips and generators, and strip the -g or -c tag so we have just the elements.
     chips = [item.replace("-c", "") for item in floor if item.endswith("-c")]
@@ -41,7 +42,8 @@ def _parse_floor(floor):
 def _score_state(e, floors):
     """Score this state of the board, where lower scores mean the board is closer to being
     scored. This score is used for the "priority" of the state when being placed into the heap
-    to check."""
+    to check.
+    """
 
     # Elevator is weighted as 3 points per floor away from the top floor.
     score = (3 - e) * 3
@@ -65,7 +67,8 @@ def _normalize_state(elevator, floors):
     floor1 contains (pl-g, pl-c, sr-g), floor2 contains (di-g, di-c, sr-g).
 
     Both states "hash" to ((1, 1), (1, 2), (2, 2)) because one pair is on floor 1, one pair on
-    floor 2, and the remaining pair split between floor 1 and 2."""
+    floor 2, and the remaining pair split between floor 1 and 2.
+    """
 
     # For each element, build a tuple of (chip_floor, generator_floor)
     element_pair_locations = defaultdict(list)
@@ -90,7 +93,8 @@ def _normalize_state(elevator, floors):
 
 def _are_any_chips_gonna_fry(floor):
     """Checks the state of the floor and makes sure we won't have any microchips that are going to
-    fry because they are left with another generator and not connected to their own generator."""
+    fry because they are left with another generator and not connected to their own generator.
+    """
 
     chips, generators = _parse_floor(floor)
 
@@ -111,7 +115,8 @@ def _are_any_chips_gonna_fry(floor):
 def _get_available_floor_options(elevator, next_elevator, floors):
     """Returns possible floor states for the next step, given the current floor state, the current
     elevator position, and the next elevator position. The elevator takes 1-2 items with it and must
-    ensure the departing floor and the arriving floor end up in a valid state."""
+    ensure the departing floor and the arriving floor end up in a valid state.
+    """
 
     next_floor_states = list()
 
@@ -121,9 +126,7 @@ def _get_available_floor_options(elevator, next_elevator, floors):
         for what_to_carry in combinations(floors[elevator], n):
             # Figure out what's left on the floor that the elevator is leaving. If anything's going
             # to fry because we're leaving it in a bad state, skip to the next option.
-            floor_leaving = [
-                item for item in floors[elevator] if item not in what_to_carry
-            ]
+            floor_leaving = [item for item in floors[elevator] if item not in what_to_carry]
             if _are_any_chips_gonna_fry(tuple(floor_leaving)):
                 continue
 
@@ -146,7 +149,8 @@ def _get_available_floor_options(elevator, next_elevator, floors):
 
 def _get_available_steps(elevator, floors):
     """Returns a list of tuples of the form (elevator, floors), which are possible next states for
-    the facility to be in."""
+    the facility to be in.
+    """
 
     next_step_options = list()
 
@@ -184,7 +188,8 @@ def _is_solved(elevator, floors):
 
 def _calc_min_steps_to_solved(floors):
     """Calculate and return the minimum number of steps to move all the chips and generators safely
-    to the fourth floor."""
+    to the fourth floor.
+    """
 
     # Maintain a set of states already visited so we can prune these from the search space later.
     global states_seen
@@ -206,7 +211,10 @@ def _calc_min_steps_to_solved(floors):
         for e, f in _get_available_steps(state.elevator, state.floors):
             states_seen.add(_normalize_state(e, f))
             new_state = PriorityStateGraphNode(
-                _score_state(e, f), e, f, state.depth + 1
+                _score_state(e, f),
+                e,
+                f,
+                state.depth + 1,
             )
             heappush(state_queue, new_state)
 
@@ -222,7 +230,6 @@ def part_two(floors):
 
 
 def run(input_file):
-
     # Not going to parse that nonsense, let's just set it up manually.
     # Thulium = tm
     # Plutonium = pu
