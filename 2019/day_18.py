@@ -32,25 +32,6 @@ class KeySearchState:
         return self.steps < other.steps
 
 
-@dataclass
-class KeyOrderSearchState:
-    coord: Coord
-    steps: int
-    keys_owned: list[str]
-
-    def __lt__(self, other: Self) -> bool:
-        # TODO for same steps, is more keys better?
-        return self.steps < other.steps
-
-    @property
-    def key_set(self) -> frozenset[str]:
-        return frozenset(self.keys_owned)
-
-    @property
-    def solved(self) -> bool:
-        return set(self.keys_owned) == set(KEYS)
-
-
 START = "@"
 
 # Walls, and locked doors, are not traversible
@@ -95,7 +76,8 @@ def _distance_to_keys_accessible(
     unlocked_grid = dict(grid)
     for key in keys_owned:
         unlocked_grid[key_coordinates[key]] = SPACE
-        unlocked_grid[door_coordinates[key.upper()]] = SPACE
+        if key.upper() in door_coordinates:
+            unlocked_grid[door_coordinates[key.upper()]] = SPACE
 
     # BFS walk the whole grid, and note which keys are accessible now that doors
     # have been unlocked, and the distance to those keys.
@@ -155,6 +137,24 @@ def _shortest_path_to_all_keys(grid: dict[Coord, str]) -> int:
 
     assert start_position is not None
 
+    @dataclass
+    class KeyOrderSearchState:
+        coord: Coord
+        steps: int
+        keys_owned: list[str]
+
+        def __lt__(self, other: Self) -> bool:
+            # TODO for same steps, is more keys better?
+            return self.steps < other.steps
+
+        @property
+        def key_set(self) -> frozenset[str]:
+            return frozenset(self.keys_owned)
+
+        @property
+        def solved(self) -> bool:
+            return set(self.keys_owned) == set(key_coordinates.keys())
+
     # We're going to BFS search a route from key to key, building up a set of keys that we're
     # collecting in order, until we have all the keys. We'll use a heap sorted by total steps,
     # so the first state we arrive in with all keys should be the shortest path there.
@@ -174,7 +174,7 @@ def _shortest_path_to_all_keys(grid: dict[Coord, str]) -> int:
 
     while queue:
         state = heappop(queue)
-        # print(f"Visiting state keys_owned={state.keys_owned} at steps={state.steps}")
+        print(f"Visiting state keys_owned={state.keys_owned} at steps={state.steps}")
 
         if state.key_set in visited:
             continue
