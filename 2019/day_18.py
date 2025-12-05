@@ -39,6 +39,7 @@ class KeyOrderSearchState:
     keys_owned: list[str]
 
     def __lt__(self, other: Self) -> bool:
+        # TODO for same steps, is more keys better?
         return self.steps < other.steps
 
     @property
@@ -173,6 +174,7 @@ def _shortest_path_to_all_keys(grid: dict[Coord, str]) -> int:
 
     while queue:
         state = heappop(queue)
+        # print(f"Visiting state keys_owned={state.keys_owned} at steps={state.steps}")
 
         if state.key_set in visited:
             continue
@@ -216,4 +218,5 @@ def part_two(raw_input: list[str]) -> int | str | None:
 
 def run(input_file: str) -> None:
     part_one(get_input(input_file))
+    # 5944 too high
     part_two(get_input(input_file))
