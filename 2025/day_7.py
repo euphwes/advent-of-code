@@ -106,6 +106,7 @@ def part_two(raw_input: list[str]) -> int | str | None:
     def _count_paths(c: Coord) -> int:
         cx, cy = c
         if cy == deepest_y:
+            print(f"{c} is deepest, returning 1")
             return 1
 
         children = []
@@ -117,9 +118,11 @@ def part_two(raw_input: list[str]) -> int | str | None:
                 children.append((cx + 1, cy))
                 break
 
-        return sum(_count_paths(child) for child in children)
+        s = sum(_count_paths(child) for child in children)
+        print(f"{c} has children, returning {s}")
+        return s
 
-    return _count_paths(sources_by_y[sy][0])
+    return _count_paths(sources_by_y[0][0])
 
 
 def run(input_file: str) -> None:
