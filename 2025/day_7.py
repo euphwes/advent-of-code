@@ -119,7 +119,7 @@ def part_two(raw_input: list[str]) -> int | str | None:
                 break
 
         s = sum(_count_paths(child) for child in children)
-        print(f"{c} has children, returning {s}")
+        print(f"{c} has children {children}, returning {s}")
         return s
 
     return _count_paths(sources_by_y[0][0])
