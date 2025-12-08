@@ -1,5 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass
+from functools import cache
 from typing import Self
 
 from util.decorators import aoc_output_formatter
@@ -99,38 +100,26 @@ def part_two(raw_input: list[str]) -> int | str | None:
     for sx, sy in sources:
         sources_by_y[sy].append((sx, sy))
 
-    assert len(sources_by_y[0]) == 1
+    deepest_y = max(sources_by_y.keys())
 
-    find_children_queue = [
-        Node(
-            coord=sources_by_y[0][0],
-            children=[],
-        ),
-    ]
-    all_nodes: list[Node] = []
+    @cache
+    def _count_paths(c: Coord) -> int:
+        cx, cy = c
+        if cy == deepest_y:
+            return 1
 
-    while find_children_queue:
-        node = find_children_queue.pop(0)
+        children = []
 
-        nx, ny = node.coord
-        child_y = ny + 2
+        while cy < deepest_y:
+            cy += 2
+            if (cx - 1, cy) in sources:
+                children.append((cx - 1, cy))
+                children.append((cx + 1, cy))
+                break
 
-        # TODO don't keep recreating child nodes
+        return sum(_count_paths(child) for child in children)
 
-        for cx, cy in sources_by_y[child_y]:
-            if cx in (nx - 1, nx + 1):
-                new_node = Node(
-                    coord=(cx, cy),
-                    children=[],
-                )
-                node.children.append(new_node)
-                if not new_node.children:
-                    find_children_queue.append(new_node)
-
-        all_nodes.append(node)
-
-    for node in all_nodes:
-        print(node)
+    return _count_paths(sources_by_y[sy][0])
 
 
 def run(input_file: str) -> None:
