@@ -2,6 +2,8 @@ from collections.abc import Callable
 from functools import cache
 from itertools import combinations
 
+from PIL import Image
+
 from util.decorators import aoc_output_formatter
 from util.input import get_input
 
@@ -236,6 +238,37 @@ def part_two(raw_input: list[str]) -> int | str | None:
     for i in range(len(coords)):
         c1, c2 = coords[i], coords[(i + 1) % len(coords)]
         perimeter_ranges.append((c1, c2))
+
+    # Store full set of coords of perimeter
+    perimeter: set[Coord] = set()
+    for r in perimeter_ranges:
+        for c in _iter_coords(r[0], r[1]):
+            perimeter.add(c)
+
+    # Dump image
+    if True:
+        # Create a smaller image
+        img = Image.new("RGB", (2000, 2000), "white")
+        pixels = img.load()
+        assert pixels
+
+        # Downscale and thicken
+        for coord in perimeter:
+            # Scale down the coordinate
+            scaled_x = coord[0] // 50
+            scaled_y = coord[1] // 50
+
+            # Draw a 3x3 super-pixel centered on the scaled coordinate
+            for dx in range(-1, 2):
+                for dy in range(-1, 2):
+                    x = scaled_x + dx
+                    y = scaled_y + dy
+                    # Check bounds
+                    if 0 <= x < 2000 and 0 <= y < 2000:
+                        pixels[x, y] = (0, 0, 0)
+
+        img.save("day_9.png")
+        return None
 
     is_in_shape = _get_is_in_shape_fn(perimeter_ranges)
 
