@@ -3,7 +3,7 @@ from collections.abc import Callable
 from functools import cache
 from itertools import combinations
 
-from PIL import Image
+from PIL import Image, ImageDraw
 
 from util.decorators import aoc_output_formatter
 from util.input import get_input
@@ -44,6 +44,79 @@ def part_one(raw_input: list[str]) -> int | str | None:
         m = max((dx + 1) * (dy + 1), m)
 
     return m
+
+
+def _get_draw_fn(perimeter_ranges: list[Range]) -> Callable[[Coord, Coord, str], None]:
+    """Get a thing."""
+
+    # Store full set of coords of perimeter
+    perimeter: set[Coord] = set()
+    for r in perimeter_ranges:
+        for c in _iter_coords(r[0], r[1]):
+            perimeter.add(c)
+
+    # Perimeter coords by y (each line)
+    perim_by_y: dict[int, list[int]] = defaultdict(list)
+    for cx, cy in perimeter:
+        perim_by_y[cy].append(cx)
+
+    perim_by_y = dict(perim_by_y)
+    for v in perim_by_y.values():
+        v.sort()
+
+    # Dump image
+    def _draw(target1: Coord, target2: Coord, filename: str) -> None:
+        # Create a smaller image
+        img = Image.new("RGB", (2000, 2000), "white")
+        pixels = img.load()
+        draw = ImageDraw.Draw(img)
+        assert pixels
+
+        # Downscale and thicken
+        rect = []
+        c3 = (min(target1[0], target2[0]), min(target1[1], target2[1]))
+        c4 = (max(target1[0], target2[0]), max(target1[1], target2[1]))
+        for coord in [c3, c4]:
+            # Scale down the coordinate
+            scaled_x = coord[0] // 50
+            scaled_y = coord[1] // 50
+            rect.append((scaled_x, scaled_y))
+
+        draw.rectangle([rect[0], rect[1]], fill=(230, 242, 255))
+
+        # Downscale and thicken
+        for coord in perimeter:
+            # Scale down the coordinate
+            scaled_x = coord[0] // 50
+            scaled_y = coord[1] // 50
+
+            # Draw a 3x3 super-pixel centered on the scaled coordinate
+            for dx in range(-1, 2):
+                for dy in range(-1, 2):
+                    x = scaled_x + dx
+                    y = scaled_y + dy
+                    # Check bounds
+                    if 0 <= x < 2000 and 0 <= y < 2000:
+                        pixels[x, y] = (0, 0, 0)
+
+        # Downscale and thicken
+        for coord in [target1, target2]:
+            # Scale down the coordinate
+            scaled_x = coord[0] // 50
+            scaled_y = coord[1] // 50
+
+            # Draw a 3x3 super-pixel centered on the scaled coordinate
+            for dx in range(-7, 8):
+                for dy in range(-7, 8):
+                    x = scaled_x + dx
+                    y = scaled_y + dy
+                    # Check bounds
+                    if 0 <= x < 2000 and 0 <= y < 2000:
+                        pixels[x, y] = (255, 0, 0)
+
+        img.save(filename)
+
+    return _draw
 
 
 def _get_is_in_shape_fn(perimeter_ranges: list[Range]) -> Callable[[Coord], bool]:
@@ -97,7 +170,7 @@ def _get_is_in_shape_fn(perimeter_ranges: list[Range]) -> Callable[[Coord], bool
         v.sort()
 
     # Dump image
-    if False:
+    if True:
         # Create a smaller image
         img = Image.new("RGB", (2000, 2000), "white")
         pixels = img.load()
@@ -161,8 +234,7 @@ def _get_is_in_shape_fn(perimeter_ranges: list[Range]) -> Callable[[Coord], bool
             if should_toggle:
                 is_inside = not is_inside
 
-        err_msg = f"Shouldn't get here. {target}"
-        raise ValueError(err_msg)
+        return False
 
     return _is_in_shape
 
@@ -189,6 +261,7 @@ def part_two(raw_input: list[str]) -> int | str | None:
         perimeter_ranges.append((c1, c2))
 
     is_in_shape = _get_is_in_shape_fn(perimeter_ranges)
+    draw = _get_draw_fn(perimeter_ranges)
 
     # tests = [
     #     ((7, 1), True),
@@ -206,26 +279,57 @@ def part_two(raw_input: list[str]) -> int | str | None:
 
     possible_rects_size_first = []
 
-    m = -1
-    for c1, c2 in combinations(coords, 2):
+    # m = -1
+    # for c1, c2 in combinations(coords, 2):
+    #     x1, y1 = c1
+    #     x2, y2 = c2
+
+    #     dx = abs(x2 - x1)
+    #     dy = abs(y2 - y1)
+
+    # if the rect defined by these two corners is bigger than the
+    # previous max, then we check if it's entirely contained in the
+    # enclosed area, to save on runtime
+
+    # new_size = (dx + 1) * (dy + 1)
+
+    # possible_rects_size_first.append((new_size, c1, c2))
+    # continue
+
+    # These are the two anchor points
+    # 94693, 50233
+    # goes with everything in lower half
+    #
+    # 94693, 48547
+    # goes with everything in top half
+
+    top_half_coords = {(cx, cy) for cx, cy in coords if cy <= 50_000}
+    bottom_half_coords = {(cx, cy) for cx, cy in coords if cy > 50_000}
+
+    c1 = (94693, 48547)
+    for c2 in top_half_coords:
         x1, y1 = c1
         x2, y2 = c2
-
         dx = abs(x2 - x1)
         dy = abs(y2 - y1)
-
-        # if the rect defined by these two corners is bigger than the
-        # previous max, then we check if it's entirely contained in the
-        # enclosed area, to save on runtime
-
         new_size = (dx + 1) * (dy + 1)
-
         possible_rects_size_first.append((new_size, c1, c2))
-        continue
+
+    c1 = (94693, 50233)
+    for c2 in bottom_half_coords:
+        x1, y1 = c1
+        x2, y2 = c2
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+        new_size = (dx + 1) * (dy + 1)
+        possible_rects_size_first.append((new_size, c1, c2))
 
     possible_rects_size_first.sort(key=lambda t: t[0], reverse=True)
 
+    # Could start at # 28000 for the full thing
     for new_size, c1, c2 in possible_rects_size_first:
+        x1, y1 = c1
+        x2, y2 = c2
         # if every spot on the perimeter of the proposed rectangle is inside
         # the larger shape, it's valid.
 
@@ -239,6 +343,7 @@ def part_two(raw_input: list[str]) -> int | str | None:
 
         for corner in (c3, c4):
             if not is_in_shape(corner):
+                # draw([c1, c2, c3, c4], f"day_9_{count}_fail_{corner}.png")
                 is_invalid = True
                 break
 
@@ -247,6 +352,7 @@ def part_two(raw_input: list[str]) -> int | str | None:
 
         for nc in _iter_coords(c1, c3):
             if not is_in_shape(nc):
+                # draw([c1, c2, nc], f"day_9_{count}_fail_{nc}.png")
                 is_invalid = True
                 break
 
@@ -255,6 +361,7 @@ def part_two(raw_input: list[str]) -> int | str | None:
 
         for nc in _iter_coords(c3, c2):
             if not is_in_shape(nc):
+                # draw([c1, c2, nc], f"day_9_{count}_fail_{nc}.png")
                 is_invalid = True
                 break
 
@@ -263,6 +370,7 @@ def part_two(raw_input: list[str]) -> int | str | None:
 
         for nc in _iter_coords(c2, c4):
             if not is_in_shape(nc):
+                # draw([c1, c2, nc], f"day_9_{count}_fail_{nc}.png")
                 is_invalid = True
                 break
 
@@ -271,6 +379,7 @@ def part_two(raw_input: list[str]) -> int | str | None:
 
         for nc in _iter_coords(c4, c1):
             if not is_in_shape(nc):
+                # draw([c1, c2, nc], f"day_9_{count}_fail_{nc}.png")
                 is_invalid = True
                 break
 
@@ -278,6 +387,7 @@ def part_two(raw_input: list[str]) -> int | str | None:
             continue
 
         # yay, valid
+        draw(c1, c2, "day_9_soln.png")
         return new_size
 
     err = "shouldn't get here"
