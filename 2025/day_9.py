@@ -1,3 +1,4 @@
+from collections import defaultdict
 from collections.abc import Callable
 from functools import cache
 from itertools import combinations
@@ -80,84 +81,44 @@ def _get_is_in_shape_fn(perimeter_ranges: list[Range]) -> Callable[[Coord], bool
         else:
             corners_dict[corner] = "F"
 
-    # Remember min x and max x so we can do a horizontal scan later.
-    all_xs: set[int] = set()
-    all_ys: set[int] = set()
-    for c1, c2 in perimeter_ranges:
-        x1, y1 = c1
-        x2, y2 = c2
-        all_xs.add(x1)
-        all_xs.add(x2)
-        all_ys.add(y1)
-        all_ys.add(y2)
+    # Store full set of coords of perimeter
+    perimeter: set[Coord] = set()
+    for r in perimeter_ranges:
+        for c in _iter_coords(r[0], r[1]):
+            perimeter.add(c)
 
-    # Remember 1 before and after 1 min/max so we start outside when doing a scan.
-    min_x = min(all_xs) - 2
-    max_x = max(all_xs) + 2
+    # Perimeter coords by y (each line)
+    perim_by_y: dict[int, list[int]] = defaultdict(list)
+    for cx, cy in perimeter:
+        perim_by_y[cy].append(cx)
 
-    min_y = min(all_ys) - 2
-    max_y = max(all_ys) + 2
+    perim_by_y = dict(perim_by_y)
+    for v in perim_by_y.values():
+        v.sort()
 
-    # Separate vertical and horizontal ranges for easier writing of logic later.
-    vertical_ranges: list[Range] = []
-    horizontal_ranges: list[Range] = []
-
-    for c1, c2 in perimeter_ranges:
-        if c1[1] == c2[1]:
-            horizontal_ranges.append((c1, c2))
-        else:
-            vertical_ranges.append((c1, c2))
-
-    @cache
-    def _is_in_vertical_range(target: Coord) -> bool:
-        """Do a thing."""
-
-        tx, ty = target
-
-        for c1, c2 in vertical_ranges:
-            x1, y1 = c1
-            _, y2 = c2
-
-            if tx == x1 and min((y1, y2)) <= ty <= max((y1, y2)):
-                return True
-
-        return False
-
-    @cache
-    def _is_in_horizontal_range(target: Coord) -> bool:
-        """Do a thing."""
-
-        tx, ty = target
-
-        for c1, c2 in horizontal_ranges:
-            x1, y1 = c1
-            x2, _ = c2
-
-            if ty == y1 and min((x1, x2)) <= tx <= max((x1, x2)):
-                return True
-
-        return False
-
-    # ======== DEBUG ==========
-
-    def _p(demo_coord):
-        for y in range(min_y, max_y):
-            for x in range(min_x, max_x):
-                asd = (x, y)
-                char = " "
-                if asd == demo_coord:
-                    char = "X"
-                elif asd in corners_dict:
-                    char = corners_dict[asd]
-                elif _is_in_horizontal_range(asd) or _is_in_vertical_range(asd):
-                    char = "#"
-                print(f"{char}", end="")
-            print()
-
+    # Dump image
     if False:
-        _p(None)
+        # Create a smaller image
+        img = Image.new("RGB", (2000, 2000), "white")
+        pixels = img.load()
+        assert pixels
 
-    # ======== DEBUG ==========
+        # Downscale and thicken
+        for coord in perimeter:
+            # Scale down the coordinate
+            scaled_x = coord[0] // 50
+            scaled_y = coord[1] // 50
+
+            # Draw a 3x3 super-pixel centered on the scaled coordinate
+            for dx in range(-1, 2):
+                for dy in range(-1, 2):
+                    x = scaled_x + dx
+                    y = scaled_y + dy
+                    # Check bounds
+                    if 0 <= x < 2000 and 0 <= y < 2000:
+                        pixels[x, y] = (0, 0, 0)
+
+        img.save("day_9.png")
 
     FLIP_PAIRS = set([frozenset("L7"), frozenset("FJ")])
 
@@ -165,14 +126,7 @@ def _get_is_in_shape_fn(perimeter_ranges: list[Range]) -> Callable[[Coord], bool
     def _is_in_shape(target: Coord) -> bool:
         """Do a thing."""
 
-        if target in corners_dict:
-            return True
-
-        # A coord is in the shape if it's directly in any of the ranges
-        if _is_in_horizontal_range(target):
-            return True
-
-        if _is_in_vertical_range(target):
+        if target in perimeter:
             return True
 
         # Otherwise we need to scan left to right and every time we cross
@@ -181,36 +135,31 @@ def _get_is_in_shape_fn(perimeter_ranges: list[Range]) -> Callable[[Coord], bool
 
         tx, ty = target
 
-        is_inside = False
-        corners: list[str] = []
+        toggle_after_x_on_this_y: list[tuple[int, bool]] = []
 
-        for test_x in range(min_x, max_x):
-            test_coord = (test_x, ty)
+        corner_buffer = []
 
-            if test_x == tx:
-                # if not is_inside:
-                #     _p(test_coord)
-                return is_inside
-
-            # Crossing a vertical range means we potentially toggle
-            if _is_in_vertical_range(test_coord):
-                # If we're on a horizontal range too, we need to check the
-                # corners of the attached vertical ranges to see if we toggle
-                # in/out or not.
-                if _is_in_horizontal_range(test_coord):
-                    if test_coord in corners_dict:
-                        if not corners:
-                            corners.append(corners_dict[test_coord])
-                        else:
-                            char = corners_dict[test_coord]
-                            other_char = corners.pop()
-                            pair = frozenset(f"{char}{other_char}")
-                            if pair in FLIP_PAIRS:
-                                is_inside = not is_inside
-
-                # If we're not also on a horizontal range, we can just cleanly toggle
+        for x in perim_by_y[ty]:
+            if (x, ty) in corners_dict:
+                char = corners_dict[(x, ty)]
+                if not corner_buffer:
+                    corner_buffer.append(char)
                 else:
-                    is_inside = not is_inside
+                    other_char = corner_buffer.pop()
+                    pair = frozenset(f"{char}{other_char}")
+                    if pair in FLIP_PAIRS:
+                        toggle_after_x_on_this_y.append((x, True))
+                    else:
+                        toggle_after_x_on_this_y.append((x, False))
+            elif not corner_buffer:
+                toggle_after_x_on_this_y.append((x, True))
+
+        is_inside = False
+        for px, should_toggle in toggle_after_x_on_this_y:
+            if tx < px:
+                return is_inside
+            if should_toggle:
+                is_inside = not is_inside
 
         err_msg = f"Shouldn't get here. {target}"
         raise ValueError(err_msg)
@@ -238,37 +187,6 @@ def part_two(raw_input: list[str]) -> int | str | None:
     for i in range(len(coords)):
         c1, c2 = coords[i], coords[(i + 1) % len(coords)]
         perimeter_ranges.append((c1, c2))
-
-    # Store full set of coords of perimeter
-    perimeter: set[Coord] = set()
-    for r in perimeter_ranges:
-        for c in _iter_coords(r[0], r[1]):
-            perimeter.add(c)
-
-    # Dump image
-    if True:
-        # Create a smaller image
-        img = Image.new("RGB", (2000, 2000), "white")
-        pixels = img.load()
-        assert pixels
-
-        # Downscale and thicken
-        for coord in perimeter:
-            # Scale down the coordinate
-            scaled_x = coord[0] // 50
-            scaled_y = coord[1] // 50
-
-            # Draw a 3x3 super-pixel centered on the scaled coordinate
-            for dx in range(-1, 2):
-                for dy in range(-1, 2):
-                    x = scaled_x + dx
-                    y = scaled_y + dy
-                    # Check bounds
-                    if 0 <= x < 2000 and 0 <= y < 2000:
-                        pixels[x, y] = (0, 0, 0)
-
-        img.save("day_9.png")
-        return None
 
     is_in_shape = _get_is_in_shape_fn(perimeter_ranges)
 
