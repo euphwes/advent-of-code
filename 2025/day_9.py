@@ -163,6 +163,9 @@ def _get_is_in_shape_fn(perimeter_ranges: list[Range]) -> Callable[[Coord], bool
     def _is_in_shape(target: Coord) -> bool:
         """Do a thing."""
 
+        if target in corners_dict:
+            return True
+
         # A coord is in the shape if it's directly in any of the ranges
         if _is_in_horizontal_range(target):
             return True
@@ -250,6 +253,8 @@ def part_two(raw_input: list[str]) -> int | str | None:
     #     mark = "" if calculated == expected else "  *****"
     #     print(f"{t}: {expected=}, {calculated=}{mark}")
 
+    possible_rects_size_first = []
+
     m = -1
     for c1, c2 in combinations(coords, 2):
         x1, y1 = c1
@@ -263,54 +268,69 @@ def part_two(raw_input: list[str]) -> int | str | None:
         # enclosed area, to save on runtime
 
         new_size = (dx + 1) * (dy + 1)
-        if new_size > m:
-            # if every spot on the perimeter of the proposed rectangle is inside
-            # the larger shape, it's valid.
 
-            #   c1 ---> c3
-            #   c4 <--- c2
+        possible_rects_size_first.append((new_size, c1, c2))
+        continue
 
-            c3 = (x1, y2)
-            c4 = (x2, y1)
+    possible_rects_size_first.sort(key=lambda t: t[0], reverse=True)
 
-            is_invalid = False
+    for new_size, c1, c2 in possible_rects_size_first:
+        # if every spot on the perimeter of the proposed rectangle is inside
+        # the larger shape, it's valid.
 
-            for nc in _iter_coords(c1, c3):
-                if not is_in_shape(nc):
-                    is_invalid = True
-                    break
+        #   c1 ---> c3
+        #   c4 <--- c2
 
-            if is_invalid:
-                continue
+        c3 = (x1, y2)
+        c4 = (x2, y1)
 
-            for nc in _iter_coords(c3, c2):
-                if not is_in_shape(nc):
-                    is_invalid = True
-                    break
+        is_invalid = False
 
-            if is_invalid:
-                continue
+        for corner in (c3, c4):
+            if not is_in_shape(corner):
+                is_invalid = True
+                break
 
-            for nc in _iter_coords(c2, c4):
-                if not is_in_shape(nc):
-                    is_invalid = True
-                    break
+        if is_invalid:
+            continue
 
-            if is_invalid:
-                continue
+        for nc in _iter_coords(c1, c3):
+            if not is_in_shape(nc):
+                is_invalid = True
+                break
 
-            for nc in _iter_coords(c4, c1):
-                if not is_in_shape(nc):
-                    is_invalid = True
-                    break
+        if is_invalid:
+            continue
 
-            if is_invalid:
-                continue
+        for nc in _iter_coords(c3, c2):
+            if not is_in_shape(nc):
+                is_invalid = True
+                break
 
-            # yay, valid
-            m = new_size
+        if is_invalid:
+            continue
 
-    return m
+        for nc in _iter_coords(c2, c4):
+            if not is_in_shape(nc):
+                is_invalid = True
+                break
+
+        if is_invalid:
+            continue
+
+        for nc in _iter_coords(c4, c1):
+            if not is_in_shape(nc):
+                is_invalid = True
+                break
+
+        if is_invalid:
+            continue
+
+        # yay, valid
+        return new_size
+
+    err = "shouldn't get here"
+    raise ValueError(err)
 
 
 def run(input_file: str) -> None:
